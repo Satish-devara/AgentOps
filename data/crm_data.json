@@ -1,0 +1,145 @@
+{
+  "leads": [
+    {
+      "id": "LEAD-9183",
+      "createdAt": "2026-11-26T01:27:09.183Z",
+      "stage": "Contacted",
+      "score": 0,
+      "name": "Prospective Buyer",
+      "company": "Acme Corp",
+      "email": "prospectivebuyer@example.com",
+      "sentiment": "Neutral (0)",
+      "bant": {
+        "budget": "Pending",
+        "authority": "Pending",
+        "need": "Pending",
+        "timeline": "Pending"
+      },
+      "appointment": null
+    },
+    {
+      "id": "LEAD-9178",
+      "createdAt": "2026-11-26T01:27:09.180Z",
+      "stage": "Demo Scheduled",
+      "score": 38,
+      "name": "Alex Mercer",
+      "company": "Nexus",
+      "email": "alexmercer@example.com",
+      "sentiment": "Positive (0.67)",
+      "bant": {
+        "budget": "Pending",
+        "authority": "Decision Maker (VP)",
+        "need": "Scale Outbound & Inbound Volume; Reduce CAC & SDR Overhead",
+        "timeline": "Pending"
+      },
+      "appointment": "Fri, Nov 27, 2026 at 10:00 AM EST",
+      "updatedAt": "2026-11-26T01:27:09.183Z",
+      "summary": "Alex Mercer from Nexus engaged in an autonomous discovery session regarding ApexAI Sales Engine. The prospect highlighted need for Scale Outbound & Inbound Volume, Reduce CAC & SDR Overhead. BANT qualification achieved an overall score of 38/100 (Cold Lead). Sentiment trended highly positive and receptive."
+    },
+    {
+      "id": "LEAD-101",
+      "name": "David Reynolds",
+      "company": "CloudScale Logistics",
+      "title": "VP of Inside Sales",
+      "email": "david.r@cloudscalelogistics.com",
+      "phone": "+1 (415) 890-4421",
+      "stage": "Demo Scheduled",
+      "score": 88,
+      "tier": "Enterprise ($4,999/mo)",
+      "sentiment": "Positive (0.78)",
+      "bant": {
+        "budget": "$60,000/yr allocated",
+        "authority": "VP (Final Signoff)",
+        "need": "Handle 15,000 inbound freight calls/week",
+        "timeline": "Q1 Deployment"
+      },
+      "appointment": "2026-11-28 14:00 EST",
+      "createdAt": "2026-11-24T01:24:00.143Z"
+    },
+    {
+      "id": "LEAD-102",
+      "name": "Elena Rostova",
+      "company": "FinTrack Global",
+      "title": "Director of RevOps",
+      "email": "elena@fintrackglobal.io",
+      "phone": "+1 (212) 555-0199",
+      "stage": "Qualified",
+      "score": 65,
+      "tier": "Growth ($1,499/mo)",
+      "sentiment": "Neutral (0.20)",
+      "bant": {
+        "budget": "$25,000 budget under review",
+        "authority": "Director (Recommender)",
+        "need": "SDR team latency > 4 hours",
+        "timeline": "Next 60 days"
+      },
+      "appointment": null,
+      "createdAt": "2026-11-25T01:24:00.149Z"
+    },
+    {
+      "id": "LEAD-103",
+      "name": "Marcus Vance",
+      "company": "Apex Healthtech",
+      "title": "SDR Manager",
+      "email": "marcus.v@apexhealth.org",
+      "phone": "+1 (312) 555-8823",
+      "stage": "New Lead",
+      "score": 38,
+      "tier": "Starter ($499/mo)",
+      "sentiment": "Skeptical (-0.15)",
+      "bant": {
+        "budget": "Under evaluation",
+        "authority": "Manager",
+        "need": "HIPAA compliant outbound",
+        "timeline": "Evaluating"
+      },
+      "appointment": null,
+      "createdAt": "2026-11-25T13:24:00.149Z"
+    }
+  ],
+  "activities": [
+    {
+      "id": "ACT-1795656429183",
+      "timestamp": "2026-11-26T01:27:09.183Z",
+      "leadId": "LEAD-9178",
+      "type": "Completed Voice Call",
+      "summary": "Alex Mercer from Nexus engaged in an autonomous discovery session regarding ApexAI Sales Engine. The prospect highlighted need for Scale Outbound & Inbound Volume, Reduce CAC & SDR Overhead. BANT qualification achieved an overall score of 38/100 (Cold Lead). Sentiment trended highly positive and receptive.",
+      "score": 38,
+      "actionItems": [
+        "Prepare customized architecture deck for booked demo on Fri, Nov 27, 2026 at 10:00 AM EST.",
+        "Sync lead profile and 4-turn call transcript to CRM.",
+        "Flag key requirements: Pricing & Packaging Tiers, Technical Architecture & Low Latency."
+      ],
+      "durationSeconds": 0
+    },
+    {
+      "id": "ACT-1",
+      "leadId": "LEAD-101",
+      "type": "Voice Call",
+      "summary": "Ava qualified CloudScale Logistics. Budget $60k confirmed. Booked demo with Sarah Chen.",
+      "timestamp": "2026-11-25T21:24:00.149Z"
+    }
+  ],
+  "appointments": [
+    {
+      "id": "APT-1795656429182",
+      "status": "Confirmed",
+      "createdAt": "2026-11-26T01:27:09.182Z",
+      "leadId": "LEAD-9178",
+      "leadName": "Alex Mercer",
+      "company": "Nexus",
+      "host": "Sarah Chen, Principal Enterprise AE",
+      "dateTime": "2026-11-27T04:30:00.000Z",
+      "slotText": "Fri, Nov 27, 2026 at 10:00 AM EST"
+    },
+    {
+      "id": "APT-1",
+      "leadId": "LEAD-101",
+      "leadName": "David Reynolds",
+      "host": "Sarah Chen (Principal AE)",
+      "dateTime": "2026-11-28T14:00:00.000Z",
+      "status": "Confirmed"
+    }
+  ],
+  "lastUpdated": "2026-11-26T01:27:09.183Z"
+}
