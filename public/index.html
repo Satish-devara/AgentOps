@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApexAI | Autonomous AI Sales Voice Agent & CRM</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="logo-group">
+      <div class="logo-badge">🎙️</div>
+      <div class="logo-text">
+        <h1>ApexAI Sales Agent</h1>
+        <span>Autonomous Real-Time Voice SDR & CRM</span>
+      </div>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-tab="voice">🎙️ Voice Console</button>
+      <button class="tab-btn" data-tab="crm">📊 CRM Pipeline</button>
+      <button class="tab-btn" data-tab="rag">🧠 RAG Explorer</button>
+      <button class="tab-btn" data-tab="arch">📐 Architecture</button>
+    </nav>
+
+    <div class="header-actions">
+      <div class="status-pill">
+        <span class="pulse-dot"></span>
+        <span id="agentStatusText">Ava (Online 24/7)</span>
+      </div>
+      <button class="btn-demo" id="btnQuickDemo">🚀 Fast Auto-Demo</button>
+    </div>
+  </header>
+
+  <!-- Live Demo Quick Bar -->
+  <div class="demo-banner">
+    <div>
+      <strong>Autonomous Voice SDR:</strong> Sub-450ms conversational turn-taking, BANT qualification & automated calendar booking.
+    </div>
+    <div class="demo-banner-actions">
+      <span style="color: #94a3b8; font-size: 0.78rem;">Language:</span>
+      <select id="langSelect" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:0.25rem 0.5rem; border-radius:6px; font-size:0.75rem;">
+        <option value="en" selected>🇺🇸 English</option>
+        <option value="es">🇪🇸 Español</option>
+        <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="de">🇩🇪 Deutsch</option>
+        <option value="ja">🇯🇵 日本語</option>
+      </select>
+      <button class="btn-outline" id="btnResetSession">🔄 New Call Session</button>
+      <button class="btn-outline" id="btnEndCall" style="border-color:#ef4444; color:#f87171;">⏹️ End Call & Summarize</button>
+    </div>
+  </div>
+
+  <main>
+    <!-- TAB 1: VOICE CONSOLE VIEW -->
+    <section id="view-voice" class="view-section active">
+      <div class="voice-grid">
+        
+        <!-- Left Column: Multi-Turn Transcript Feed -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📝 Real-Time Call Transcript</div>
+            <span class="msg-tag" id="turnCounter">0 turns</span>
+          </div>
+          <div class="card-body">
+            <div class="transcript-feed" id="transcriptFeed">
+              <div class="message-bubble agent">
+                <div class="msg-header">
+                  <span class="name-agent">Ava (ApexAI SDR)</span>
+                  <span class="msg-tag">Greeting</span>
+                </div>
+                <div>Hello! I'm Ava, Senior Solutions Executive at ApexAI. We deploy autonomous voice agents that qualify inbound and outbound leads 24/7 with sub-450ms latency. Are you looking to scale outbound pipeline or automate inbound response time?</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Column: Voice Sphere & Interactive Stage -->
+        <div class="center-column">
+          <div class="voice-stage-card">
+            
+            <div class="orb-container">
+              <div class="ripple"></div>
+              <div class="orb" id="voiceOrb"></div>
+            </div>
+
+            <!-- Waveform visualizer bars -->
+            <div class="waveform-bars" id="waveform">
+              <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+              <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+              <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+              <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+              <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            </div>
+
+            <div class="stage-status-text" id="stageStatus">Ready to talk</div>
+            <div class="stage-sub-text" id="stageSub">Click the microphone button to speak with Ava, or use the quick prompt buttons below.</div>
+
+            <!-- Main Mic Controls -->
+            <div class="voice-action-bar">
+              <button class="btn-mic-main" id="btnMic">
+                <span id="micIcon">🎙️</span>
+                <span id="micText">Speak to Ava</span>
+              </button>
+              <button class="btn-icon" id="btnAudioToggle" title="Audio Playback (TTS)">🔊</button>
+            </div>
+
+            <!-- Text Fallback Input -->
+            <div class="text-input-bar">
+              <input type="text" id="textInput" placeholder="Or type your response here and press enter...">
+              <button id="btnSendText">Send</button>
+            </div>
+
+            <!-- Quick Scenario Triggers -->
+            <div class="quick-prompts">
+              <span class="chip" data-text="What is ApexAI and how does the voice agent work?">💡 What is ApexAI?</span>
+              <span class="chip" data-text="How much does it cost? What are your pricing tiers?">💰 Pricing & Tiers</span>
+              <span class="chip" data-text="Our budget is $50,000 and we want to book an executive demo for our VP next week.">🔥 $50k Budget + Book Demo</span>
+              <span class="chip" data-text="Won't an AI agent sound robotic and turn off high-value clients?">🤖 Objection: Too Robotic?</span>
+              <span class="chip" data-text="Is your solution HIPAA and SOC2 compliant for enterprise data?">🔒 Security & HIPAA</span>
+              <span class="chip" data-text="Hola, ¿hablas español? Me gustaría conocer los precios.">🇪🇸 Spanish Inquiry</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right Column: Real-Time Intelligence & CRM Telemetry -->
+        <div class="telemetry-column">
+          
+          <!-- BANT Lead Qualification Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🎯 Intelligent BANT Qualification</div>
+            </div>
+            <div class="card-body">
+              <div class="lead-score-header">
+                <div>
+                  <div style="font-size:0.7rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Lead Score</div>
+                  <div class="lead-score-number" id="bantTotalScore">15 / 100</div>
+                </div>
+                <div class="lead-badge" id="bantBadge">Initial Lead</div>
+              </div>
+
+              <div class="bant-meter-group">
+                <!-- Budget -->
+                <div class="bant-item">
+                  <div class="bant-label-row">
+                    <span class="bant-name">Budget (B)</span>
+                    <span class="bant-val" id="bantBudgetVal">Pending</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="bantBudgetBar" style="width: 10%;"></div>
+                  </div>
+                </div>
+
+                <!-- Authority -->
+                <div class="bant-item">
+                  <div class="bant-label-row">
+                    <span class="bant-name">Authority (A)</span>
+                    <span class="bant-val" id="bantAuthVal">Pending</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="bantAuthBar" style="width: 15%;"></div>
+                  </div>
+                </div>
+
+                <!-- Need -->
+                <div class="bant-item">
+                  <div class="bant-label-row">
+                    <span class="bant-name">Need (N)</span>
+                    <span class="bant-val" id="bantNeedVal">Pending</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="bantNeedBar" style="width: 10%;"></div>
+                  </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="bant-item">
+                  <div class="bant-label-row">
+                    <span class="bant-name">Timeline (T)</span>
+                    <span class="bant-val" id="bantTimeVal">Pending</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="bantTimeBar" style="width: 10%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Sentiment Radar -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">⚡ Real-Time Sentiment & Tone</div>
+            </div>
+            <div class="card-body">
+              <div class="sentiment-box">
+                <div class="sentiment-emoji" id="sentEmoji">🙂</div>
+                <div class="sentiment-info">
+                  <div class="sentiment-title" id="sentTitle">Neutral / Receptive</div>
+                  <div class="sentiment-sub" id="sentScoreText">Valence: 0.00 | Confidence: 50%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Appointment Card -->
+          <div class="card" id="appointmentContainer">
+            <div class="card-header">
+              <div class="card-title">📅 Meeting & Calendar Sync</div>
+            </div>
+            <div class="card-body" id="appointmentBody">
+              <div style="font-size: 0.78rem; color: #94a3b8; text-align: center; padding: 0.75rem;">
+                No demo booked yet. Ava automatically proposes matching AE calendar slots once BANT qualification hits the threshold.
+              </div>
+            </div>
+          </div>
+
+          <!-- RAG Citations Panel -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🧠 RAG Grounding Citations</div>
+            </div>
+            <div class="card-body">
+              <div class="rag-citation-list" id="ragCitationList">
+                <div style="font-size:0.75rem; color:#64748b;">Awaiting conversational query to retrieve knowledge chunks...</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: CRM PIPELINE VIEW -->
+    <section id="view-crm" class="view-section">
+      <!-- KPI Metric Row -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <span class="kpi-label">Total Leads</span>
+          <span class="kpi-value" id="kpiTotalLeads">3</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Qualified Pipeline</span>
+          <span class="kpi-value" id="kpiQualifiedLeads">2</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Booked Demos</span>
+          <span class="kpi-value" id="kpiDemosBooked" style="color:#34d399;">1</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Avg Lead Score</span>
+          <span class="kpi-value" id="kpiAvgScore" style="color:#38bdf8;">64</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Conversion Rate</span>
+          <span class="kpi-value" id="kpiConversionRate" style="color:#a855f7;">33%</span>
+        </div>
+      </div>
+
+      <!-- Kanban Pipeline Board -->
+      <div class="kanban-board">
+        <!-- Col 1: New Lead -->
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <span>📥 New Inbound Leads</span>
+            <span class="msg-tag" id="countNewLeads">1</span>
+          </div>
+          <div class="kanban-cards" id="colNewLeads"></div>
+        </div>
+
+        <!-- Col 2: Qualified -->
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <span>🎯 BANT Qualified</span>
+            <span class="msg-tag" id="countQualified">1</span>
+          </div>
+          <div class="kanban-cards" id="colQualified"></div>
+        </div>
+
+        <!-- Col 3: Demo Scheduled -->
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <span>📅 Demo Scheduled</span>
+            <span class="msg-tag" id="countScheduled">1</span>
+          </div>
+          <div class="kanban-cards" id="colScheduled"></div>
+        </div>
+
+        <!-- Col 4: Closed / Customer -->
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <span>🏆 Closed Won / Pilot</span>
+            <span class="msg-tag" id="countClosed">0</span>
+          </div>
+          <div class="kanban-cards" id="colClosed"></div>
+        </div>
+      </div>
+
+      <!-- Leads Table -->
+      <div class="card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">🗂️ CRM Lead Database & Call Records</div>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="btn-outline" id="btnExportCSV">📥 Export CSV</button>
+            <button class="btn-outline" id="btnResetCRM">🔄 Reset CRM</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0; overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.8rem; text-align:left;">
+            <thead>
+              <tr style="background:#1e293b; color:#94a3b8; border-bottom:1px solid #334155;">
+                <th style="padding:0.75rem 1rem;">ID</th>
+                <th style="padding:0.75rem 1rem;">Contact & Company</th>
+                <th style="padding:0.75rem 1rem;">Stage</th>
+                <th style="padding:0.75rem 1rem;">Score</th>
+                <th style="padding:0.75rem 1rem;">BANT Summary</th>
+                <th style="padding:0.75rem 1rem;">Scheduled Appointment</th>
+              </tr>
+            </thead>
+            <tbody id="crmTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: RAG KNOWLEDGE EXPLORER -->
+    <section id="view-rag" class="view-section">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🧠 RAG Semantic Search & Knowledge Retrieval Tester</div>
+        </div>
+        <div class="card-body">
+          <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:1rem;">
+            Test the vector & TF-IDF semantic search engine that grounds Ava's voice responses in enterprise facts, pricing, objection playbooks, and compliance specs.
+          </p>
+
+          <div style="display:flex; gap:0.75rem; margin-bottom:1.5rem;">
+            <input type="text" id="ragTestInput" placeholder="Try asking: 'how much is enterprise plan?', 'what about HIPAA compliance?', 'will it replace SDRs?'" style="flex:1; background:#0f172a; border:1px solid #334155; color:#fff; padding:0.75rem 1rem; border-radius:8px; font-size:0.85rem;">
+            <button class="btn-demo" id="btnRunRagSearch">🔍 Search Knowledge Base</button>
+          </div>
+
+          <div id="ragSearchResults">
+            <!-- Results populated here -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: SYSTEM ARCHITECTURE & INTERVIEW BRIEF -->
+    <section id="view-arch" class="view-section">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📐 Enterprise System Architecture & Scalability Blueprint</div>
+        </div>
+        <div class="card-body" style="font-size:0.85rem; line-height:1.6; color:#cbd5e1;">
+          <h3 style="color:#38bdf8; margin-bottom:0.75rem;">Sub-450ms Real-Time Voice Pipeline Architecture</h3>
+          <p style="margin-bottom:1rem;">
+            The autonomous sales agent combines 5 tightly orchestrated layers to achieve natural human-grade conversational turn-taking:
+          </p>
+
+          <div style="background:#0f172a; padding:1.25rem; border-radius:8px; border:1px solid #334155; margin-bottom:1.5rem; font-family:var(--font-mono); font-size:0.8rem; overflow-x:auto;">
+[ Caller Mic / SIP Phone ]
+          │ (WebRTC / G.711 Audio Stream)
+          ▼
+[ Audio Transport Gateway & VAD ] ── (Barge-in Voice Activity Detection <50ms)
+          │
+          ▼
+[ Streaming STT Engine ] ── (Whisper / Deepgram Nova-2: Latency ~120ms)
+          │ (Interim Transcripts)
+          ▼
+[ RAG Vector Retrieval & Memory ] ── (Cosine Semantic Search & BANT Extractor <40ms)
+          │
+          ▼
+[ Orchestration & LLM Engine ] ── (Fine-Tuned Sales LLaMA / Gemini: First Token ~140ms)
+          │ (Streaming Tokens)
+          ▼
+[ Neural TTS Speech Synthesis ] ── (Streaming Prosody & Cloned Voice: Audio chunk <100ms)
+          │
+          ▼
+[ Caller Headset / CRM Webhook Sync ] ── (Total End-to-End Latency: ~450ms)
+          </div>
+
+          <h3 style="color:#38bdf8; margin-top:1.5rem; margin-bottom:0.5rem;">Scalability to 100,000 Users / 5,000 Concurrent Calls</h3>
+          <ul style="padding-left:1.5rem; margin-bottom:1.5rem;">
+            <li><strong>Distributed Telephony Layer:</strong> Auto-scaling LiveKit WebRTC and FreeSWITCH SIP clusters behind AWS Network Load Balancers.</li>
+            <li><strong>State & Memory Store:</strong> Redis Enterprise Cluster for sub-millisecond session state and sliding conversational history.</li>
+            <li><strong>Decoupled Event Streaming:</strong> Apache Kafka event bus piping call telemetry, sentiment, and BANT scoring to CRM workers asynchronously without blocking voice audio loops.</li>
+            <li><strong>Vector Store:</strong> Clustered Milvus / Qdrant with HNSW indexing for sub-10ms similarity search across 500,000+ enterprise knowledge documents.</li>
+            <li><strong>Edge Token Economics:</strong> Local SLM (Small Language Model e.g. LLaMA-3.1-8B) on vLLM GPU clusters for $0.002/turn vs proprietary cloud LLMs at $0.03/turn.</li>
+          </ul>
+
+          <h3 style="color:#38bdf8; margin-bottom:0.5rem;">Enterprise Security & Compliance</h3>
+          <ul style="padding-left:1.5rem;">
+            <li><strong>SOC2 Type II & HIPAA:</strong> Zero Data Retention (ZDR) guarantee; conversation data is never persisted for foundational model training.</li>
+            <li><strong>Edge PII Scrubbing:</strong> Automatic regex and NER redaction of credit cards, SSNs, and private personal identifiers prior to vector indexing.</li>
+            <li><strong>Encryption:</strong> TLS 1.3 encryption for voice and signal transport, AES-256 for all CRM records at rest.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Post-Call Executive Summary Modal -->
+  <div class="modal-overlay" id="summaryModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div style="font-weight:700; font-size:1.05rem; color:#fff; display:flex; align-items:center; gap:0.5rem;">
+          <span>📋</span> Post-Call Executive Summary & CRM Deal Record
+        </div>
+        <button class="close-btn" id="btnCloseModal">&times;</button>
+      </div>
+
+      <div class="modal-body" id="modalSummaryBody">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-outline" id="btnCopyEmail">📋 Copy Follow-Up Email</button>
+        <button class="btn-demo" id="btnModalCloseDone">Done & View in CRM</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
