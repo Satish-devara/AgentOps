@@ -21,6 +21,7 @@
     <nav class="nav-tabs">
       <button class="tab-btn active" data-tab="voice">🎙️ Voice Console</button>
       <button class="tab-btn" data-tab="crm">📊 CRM Pipeline</button>
+      <button class="tab-btn" data-tab="roi">💰 ROI Calculator</button>
       <button class="tab-btn" data-tab="rag">🧠 RAG Explorer</button>
       <button class="tab-btn" data-tab="arch">📐 Architecture</button>
     </nav>
@@ -36,10 +37,17 @@
 
   <!-- Live Demo Quick Bar -->
   <div class="demo-banner">
-    <div>
-      <strong>Autonomous Voice SDR:</strong> Sub-450ms conversational turn-taking, BANT qualification & automated calendar booking.
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <strong>Autonomous Voice SDR:</strong> Sub-450ms turn-taking, BANT qualification & automated calendar booking.
     </div>
     <div class="demo-banner-actions">
+      <span style="color: #94a3b8; font-size: 0.78rem;">Persona:</span>
+      <select id="personaSelect" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:0.25rem 0.5rem; border-radius:6px; font-size:0.75rem;">
+        <option value="ava" selected>👩 Ava (Senior SDR)</option>
+        <option value="marcus">👨 Marcus (Solution Architect)</option>
+        <option value="elena">👩‍💼 Elena (Enterprise Closer)</option>
+      </select>
+
       <span style="color: #94a3b8; font-size: 0.78rem;">Language:</span>
       <select id="langSelect" style="background:#1e293b; color:#fff; border:1px solid #334155; padding:0.25rem 0.5rem; border-radius:6px; font-size:0.75rem;">
         <option value="en" selected>🇺🇸 English</option>
@@ -49,8 +57,10 @@
         <option value="de">🇩🇪 Deutsch</option>
         <option value="ja">🇯🇵 日本語</option>
       </select>
-      <button class="btn-outline" id="btnResetSession">🔄 New Call Session</button>
-      <button class="btn-outline" id="btnEndCall" style="border-color:#ef4444; color:#f87171;">⏹️ End Call & Summarize</button>
+
+      <button class="btn-outline" id="btnEditProspect">👤 Edit Lead</button>
+      <button class="btn-outline" id="btnResetSession">🔄 Reset</button>
+      <button class="btn-outline" id="btnEndCall" style="border-color:#ef4444; color:#f87171;">⏹️ End Call</button>
     </div>
   </div>
 
@@ -78,10 +88,33 @@
           </div>
         </div>
 
-        <!-- Center Column: Voice Sphere & Interactive Stage -->
+        <!-- Center Column: Voice Sphere, Telephony HUD & Interactive Stage -->
         <div class="center-column">
           <div class="voice-stage-card">
             
+            <!-- Telephony Live HUD Bar -->
+            <div class="telephony-hud">
+              <div class="hud-item">
+                <span class="hud-dot"></span>
+                <span id="callStatusBadge">WebRTC HD Voice (48kHz)</span>
+              </div>
+              <div class="hud-item" style="color:#38bdf8; font-weight:700;">
+                <span id="callTimer">⏱️ 00:00</span>
+              </div>
+              <div class="hud-item" style="color:#94a3b8;">
+                <span>Latency: <strong>380ms</strong></span>
+              </div>
+              <div class="hud-actions">
+                <button class="hud-btn" id="btnHudMute" title="Mute Microphone">🎤</button>
+                <button class="hud-btn" id="btnHudHold" title="Place Call on Hold">⏸️</button>
+                <button class="hud-btn" id="btnHudTransfer" title="Transfer Call to Human AE">👥</button>
+              </div>
+            </div>
+
+            <!-- Web Audio Frequency Canvas -->
+            <canvas id="audioCanvas" width="480" height="40" style="margin-top:0.5rem;"></canvas>
+
+            <!-- Voice Orb -->
             <div class="orb-container">
               <div class="ripple"></div>
               <div class="orb" id="voiceOrb"></div>
@@ -120,6 +153,7 @@
               <span class="chip" data-text="How much does it cost? What are your pricing tiers?">💰 Pricing & Tiers</span>
               <span class="chip" data-text="Our budget is $50,000 and we want to book an executive demo for our VP next week.">🔥 $50k Budget + Book Demo</span>
               <span class="chip" data-text="Won't an AI agent sound robotic and turn off high-value clients?">🤖 Objection: Too Robotic?</span>
+              <span class="chip" data-text="How does ApexAI compare to Bland AI and traditional SDRs?">⚡ ApexAI vs Bland AI</span>
               <span class="chip" data-text="Is your solution HIPAA and SOC2 compliant for enterprise data?">🔒 Security & HIPAA</span>
               <span class="chip" data-text="Hola, ¿hablas español? Me gustaría conocer los precios.">🇪🇸 Spanish Inquiry</span>
               <span class="chip" data-text="Bonjour, pouvez-vous me donner les tarifs et fonctionnalités d'ApexAI?">🇫🇷 French Inquiry</span>
@@ -133,6 +167,25 @@
         <!-- Right Column: Real-Time Intelligence & CRM Telemetry -->
         <div class="telemetry-column">
           
+          <!-- Competitor Battlecard Alert Card (Dynamic) -->
+          <div class="card competitor-card" id="competitorAlertCard" style="display:none;">
+            <div class="card-header" style="background:rgba(245, 158, 11, 0.15); border-bottom-color:rgba(245, 158, 11, 0.3);">
+              <div class="card-title" style="color:#fbbf24;">⚔️ Competitor Battlecard Alert</div>
+              <span class="msg-tag" id="competitorNameTag" style="background:#f59e0b; color:#000; font-weight:700;">COMPETITOR</span>
+            </div>
+            <div class="card-body">
+              <div style="font-size:0.75rem; color:#fde68a; margin-bottom:0.4rem; font-weight:700;" id="compAdvantageTitle">
+                Key Win Strategy & Differentiator
+              </div>
+              <div style="font-size:0.75rem; color:#e2e8f0; line-height:1.45;" id="compAdvantageText">
+                ApexAI provides turnkey CRM BANT sync, sub-450ms latency, and HIPAA/SOC2 compliance out-of-the-box without requiring custom developer glue code.
+              </div>
+              <div style="margin-top:0.4rem; font-size:0.72rem; color:#34d399; font-weight:700;" id="compWinRate">
+                🏆 87% Enterprise Win-Rate in Head-to-Head Evaluations
+              </div>
+            </div>
+          </div>
+
           <!-- BANT Lead Qualification Card -->
           <div class="card">
             <div class="card-header">
@@ -333,7 +386,80 @@
       </div>
     </section>
 
-    <!-- TAB 3: RAG KNOWLEDGE EXPLORER -->
+    <!-- TAB 3: INTERACTIVE ROI & CAC CALCULATOR -->
+    <section id="view-roi" class="view-section">
+      <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-header">
+          <div class="card-title">💰 Enterprise Sales ROI & Cost Savings Calculator</div>
+        </div>
+        <div class="card-body">
+          <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1.5rem;">
+            Calculate financial payback and pipeline acceleration compared to traditional human SDR teams.
+          </p>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:2rem;">
+            <!-- Sliders Column -->
+            <div style="display:flex; flex-direction:column; gap:1.25rem;">
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; margin-bottom:0.4rem;">
+                  <span>Sales Team Size (SDR Reps)</span>
+                  <span id="valSdrCount" style="color:#38bdf8;">5 SDRs</span>
+                </div>
+                <input type="range" id="sliderSdrCount" min="1" max="50" value="5" style="width:100%;">
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; margin-bottom:0.4rem;">
+                  <span>Monthly Inbound/Outbound Lead Volume</span>
+                  <span id="valLeadVolume" style="color:#38bdf8;">10,000 leads/mo</span>
+                </div>
+                <input type="range" id="sliderLeadVolume" min="500" max="100000" step="500" value="10000" style="width:100%;">
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; margin-bottom:0.4rem;">
+                  <span>Average Deal Contract Value (ACV)</span>
+                  <span id="valDealSize" style="color:#38bdf8;">$15,000</span>
+                </div>
+                <input type="range" id="sliderDealSize" min="2000" max="100000" step="1000" value="15000" style="width:100%;">
+              </div>
+            </div>
+
+            <!-- ROI Output Display -->
+            <div style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between;">
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                <div>
+                  <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase;">Annual Labor Savings</div>
+                  <div style="font-size:1.6rem; font-weight:800; color:#34d399;" id="roiLaborSavings">$315,000</div>
+                  <div style="font-size:0.72rem; color:#64748b;">vs $75k/rep + benefits</div>
+                </div>
+                <div>
+                  <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase;">Extra Pipeline Value</div>
+                  <div style="font-size:1.6rem; font-weight:800; color:#38bdf8;" id="roiPipelineValue">+$1,800,000</div>
+                  <div style="font-size:0.72rem; color:#64748b;">via sub-15s speed-to-lead</div>
+                </div>
+                <div>
+                  <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase;">Payback Period</div>
+                  <div style="font-size:1.6rem; font-weight:800; color:#fbbf24;" id="roiPaybackPeriod">19 Days</div>
+                  <div style="font-size:0.72rem; color:#64748b;">Full ROI break-even</div>
+                </div>
+                <div>
+                  <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase;">CAC Reduction</div>
+                  <div style="font-size:1.6rem; font-weight:800; color:#c084fc;" id="roiCacReduction">68%</div>
+                  <div style="font-size:0.72rem; color:#64748b;">Lower acquisition cost</div>
+                </div>
+              </div>
+
+              <div style="margin-top:1.25rem;">
+                <button class="btn-demo" id="btnCopyRoiReport" style="width:100%; justify-content:center;">📋 Copy Custom ROI Executive Memo</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: RAG KNOWLEDGE EXPLORER -->
     <section id="view-rag" class="view-section">
       <div class="card">
         <div class="card-header">
@@ -349,14 +475,12 @@
             <button class="btn-demo" id="btnRunRagSearch">🔍 Search Knowledge Base</button>
           </div>
 
-          <div id="ragSearchResults">
-            <!-- Results populated here -->
-          </div>
+          <div id="ragSearchResults"></div>
         </div>
       </div>
     </section>
 
-    <!-- TAB 4: SYSTEM ARCHITECTURE & INTERVIEW BRIEF -->
+    <!-- TAB 5: SYSTEM ARCHITECTURE & INTERVIEW BRIEF -->
     <section id="view-arch" class="view-section">
       <div class="card">
         <div class="card-header">
@@ -411,6 +535,32 @@
 
   </main>
 
+  <!-- Edit Prospect Modal -->
+  <div class="modal-overlay" id="editProspectModal">
+    <div class="modal-card" style="max-width:480px;">
+      <div class="modal-header">
+        <div style="font-weight:700; font-size:1rem; color:#fff;">👤 Personalize Prospect Profile</div>
+        <button class="close-btn" id="btnCloseProspectModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label style="font-size:0.75rem; color:#94a3b8;">Prospect Full Name</label>
+        <input type="text" id="inputProspectName" style="background:#0f172a; border:1px solid #334155; color:#fff; padding:0.6rem; border-radius:6px; font-size:0.85rem; margin-bottom:0.75rem;">
+
+        <label style="font-size:0.75rem; color:#94a3b8;">Company Name</label>
+        <input type="text" id="inputProspectCompany" style="background:#0f172a; border:1px solid #334155; color:#fff; padding:0.6rem; border-radius:6px; font-size:0.85rem; margin-bottom:0.75rem;">
+
+        <label style="font-size:0.75rem; color:#94a3b8;">Title / Role</label>
+        <input type="text" id="inputProspectTitle" style="background:#0f172a; border:1px solid #334155; color:#fff; padding:0.6rem; border-radius:6px; font-size:0.85rem; margin-bottom:0.75rem;">
+
+        <label style="font-size:0.75rem; color:#94a3b8;">Work Email</label>
+        <input type="email" id="inputProspectEmail" style="background:#0f172a; border:1px solid #334155; color:#fff; padding:0.6rem; border-radius:6px; font-size:0.85rem;">
+      </div>
+      <div class="modal-footer">
+        <button class="btn-demo" id="btnSaveProspect">Save Profile</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Post-Call Executive Summary Modal -->
   <div class="modal-overlay" id="summaryModal">
     <div class="modal-card">
@@ -421,11 +571,10 @@
         <button class="close-btn" id="btnCloseModal">&times;</button>
       </div>
 
-      <div class="modal-body" id="modalSummaryBody">
-        <!-- Rendered by JS -->
-      </div>
+      <div class="modal-body" id="modalSummaryBody"></div>
 
       <div class="modal-footer">
+        <button class="btn-outline" id="btnPrintDossier">🖨️ Print Deal Dossier</button>
         <button class="btn-outline" id="btnCopyEmail">📋 Copy Follow-Up Email</button>
         <button class="btn-demo" id="btnModalCloseDone">Done & View in CRM</button>
       </div>

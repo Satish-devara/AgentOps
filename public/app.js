@@ -467,6 +467,17 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // 3B. Competitor Battlecard Alert
+    const compCard = document.getElementById('competitorAlertCard');
+    if (compCard) {
+      if (data.competitorAlert) {
+        compCard.style.display = 'block';
+        document.getElementById('competitorNameTag').textContent = data.competitorAlert.name;
+        document.getElementById('compAdvantageText').textContent = data.competitorAlert.keyAdvantage;
+        document.getElementById('compWinRate').textContent = `🏆 ${data.competitorAlert.winRate}`;
+      }
+    }
+
     // 4. Appointment Booking Card
     if (data.booking) {
       appointmentBody.innerHTML = `
@@ -798,6 +809,196 @@ document.addEventListener('DOMContentLoaded', () => {
   btnRunRag?.addEventListener('click', executeRagSearch);
   ragInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') executeRagSearch();
+  });
+
+  // ========================================================
+  // ADVANCED ENTERPRISE SUITE: TELEPHONY HUD, AUDIO CANVAS & ROI
+  // ========================================================
+
+  // 1. Live Call Timer
+  let callSeconds = 0;
+  let callTimerInterval = setInterval(() => {
+    callSeconds++;
+    const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+    const secs = String(callSeconds % 60).padStart(2, '0');
+    const timerEl = document.getElementById('callTimer');
+    if (timerEl) timerEl.textContent = `⏱️ ${mins}:${secs}`;
+  }, 1000);
+
+  // 2. Telephony HUD Controls (Mute, Hold, Transfer)
+  const btnHudMute = document.getElementById('btnHudMute');
+  const btnHudHold = document.getElementById('btnHudHold');
+  const btnHudTransfer = document.getElementById('btnHudTransfer');
+  let isMuted = false;
+  let isOnHold = false;
+
+  btnHudMute?.addEventListener('click', () => {
+    isMuted = !isMuted;
+    btnHudMute.classList.toggle('active', isMuted);
+    btnHudMute.textContent = isMuted ? '🔇' : '🎤';
+    addSystemNote(isMuted ? 'Caller microphone muted' : 'Caller microphone unmuted');
+  });
+
+  btnHudHold?.addEventListener('click', () => {
+    isOnHold = !isOnHold;
+    btnHudHold.classList.toggle('active', isOnHold);
+    if (isOnHold) {
+      window.speechSynthesis.cancel();
+      stopSpeakingAnimation();
+      stageStatus.textContent = '⏸️ Call Placed on Hold';
+      stageSub.textContent = 'Hold music streaming... (Click Hold again to resume)';
+      addSystemNote('Call placed on hold by representative');
+    } else {
+      stageStatus.textContent = 'Ready to talk';
+      stageSub.textContent = 'Call resumed with Ava.';
+      addSystemNote('Call resumed');
+    }
+  });
+
+  btnHudTransfer?.addEventListener('click', () => {
+    const confirmTransfer = confirm('Initiate warm transfer to Sarah Chen, Principal Enterprise AE?');
+    if (confirmTransfer) {
+      addSystemNote('🔄 Routing call to Sarah Chen (Warm Transfer Bridge)');
+      alert('Warm transfer initiated! Connecting to Sarah Chen with full conversational context and BANT notes attached.');
+    }
+  });
+
+  // 3. Audio Frequency Visualizer Canvas
+  const canvas = document.getElementById('audioCanvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let waveOffset = 0;
+
+    function renderAudioWave() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const isActive = isRecording || voiceOrb.classList.contains('speaking');
+
+      const bars = 48;
+      const barWidth = canvas.width / bars;
+
+      for (let i = 0; i < bars; i++) {
+        let barHeight = 4;
+        if (isActive) {
+          // Dynamic sine frequency wave
+          barHeight = Math.abs(Math.sin((i * 0.25) + waveOffset)) * (canvas.height * 0.75) + 4;
+        }
+
+        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+        gradient.addColorStop(0, '#06b6d4');
+        gradient.addColorStop(0.5, '#3b82f6');
+        gradient.addColorStop(1, '#8b5cf6');
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(i * barWidth, (canvas.height - barHeight) / 2, barWidth - 2, barHeight);
+      }
+
+      if (isActive) {
+        waveOffset += 0.12;
+      }
+      requestAnimationFrame(renderAudioWave);
+    }
+    renderAudioWave();
+  }
+
+  // 4. ROI & Cost Savings Calculator
+  const sliderSdrCount = document.getElementById('sliderSdrCount');
+  const sliderLeadVolume = document.getElementById('sliderLeadVolume');
+  const sliderDealSize = document.getElementById('sliderDealSize');
+  const btnCopyRoiReport = document.getElementById('btnCopyRoiReport');
+
+  function calculateROI() {
+    if (!sliderSdrCount || !sliderLeadVolume || !sliderDealSize) return;
+
+    const sdrCount = parseInt(sliderSdrCount.value, 10);
+    const leadVolume = parseInt(sliderLeadVolume.value, 10);
+    const dealSize = parseInt(sliderDealSize.value, 10);
+
+    // Update Slider Labels
+    document.getElementById('valSdrCount').textContent = `${sdrCount} SDRs`;
+    document.getElementById('valLeadVolume').textContent = `${leadVolume.toLocaleString()} leads/mo`;
+    document.getElementById('valDealSize').textContent = `$${dealSize.toLocaleString()}`;
+
+    // Financial Formulas
+    // Human SDR costs ~$75,000 + $20k tools = $95,000/yr. ApexAI Enterprise is $60,000/yr total.
+    const humanCost = sdrCount * 95000;
+    const aiCost = 59988; // Enterprise Plan
+    const laborSavings = Math.max(35000, humanCost - aiCost);
+
+    // 15-second speed to lead boosts conversion from 2.5% to 4.2% (+1.7% more deals closed)
+    const extraDeals = Math.round((leadVolume * 12) * 0.006);
+    const extraPipeline = extraDeals * dealSize;
+
+    // Payback in days
+    const paybackDays = Math.max(12, Math.round(28 - (leadVolume / 5000)));
+
+    // CAC Reduction
+    const cacReduction = Math.min(78, Math.round(55 + (sdrCount * 1.2)));
+
+    // Render Outputs
+    document.getElementById('roiLaborSavings').textContent = `$${laborSavings.toLocaleString()}`;
+    document.getElementById('roiPipelineValue').textContent = `+$${extraPipeline.toLocaleString()}`;
+    document.getElementById('roiPaybackPeriod').textContent = `${paybackDays} Days`;
+    document.getElementById('roiCacReduction').textContent = `${cacReduction}%`;
+  }
+
+  sliderSdrCount?.addEventListener('input', calculateROI);
+  sliderLeadVolume?.addEventListener('input', calculateROI);
+  sliderDealSize?.addEventListener('input', calculateROI);
+  calculateROI();
+
+  btnCopyRoiReport?.addEventListener('click', () => {
+    const sdrCount = sliderSdrCount.value;
+    const leadVolume = sliderLeadVolume.value;
+    const dealSize = sliderDealSize.value;
+    const savings = document.getElementById('roiLaborSavings').textContent;
+    const pipeline = document.getElementById('roiPipelineValue').textContent;
+    const payback = document.getElementById('roiPaybackPeriod').textContent;
+
+    const memo = `APEXAI EXECUTIVE FINANCIAL ROI MEMO
+Prepared for: ${leadProfile.company || 'Enterprise Client'}
+--------------------------------------------------
+• Team Baseline: ${sdrCount} Human SDRs | ${leadVolume} Leads/Mo | $${dealSize} ACV
+• Projected Annual Labor Savings: ${savings} / year
+• Accelerated Pipeline Value: ${pipeline} (via sub-15s speed-to-lead)
+• Payback Period: ${payback}
+• Net CAC Reduction: ${document.getElementById('roiCacReduction').textContent}
+--------------------------------------------------
+Recommendation: Deploy ApexAI Growth/Enterprise Tier to automate Tier-1 lead triage.`;
+
+    navigator.clipboard.writeText(memo).then(() => {
+      btnCopyRoiReport.textContent = '✅ Copied ROI Executive Memo!';
+      setTimeout(() => { btnCopyRoiReport.textContent = '📋 Copy Custom ROI Executive Memo'; }, 2000);
+    });
+  });
+
+  // 5. Personalize Prospect Profile Modal
+  const editProspectModal = document.getElementById('editProspectModal');
+  const btnEditProspect = document.getElementById('btnEditProspect');
+  const btnCloseProspectModal = document.getElementById('btnCloseProspectModal');
+  const btnSaveProspect = document.getElementById('btnSaveProspect');
+
+  btnEditProspect?.addEventListener('click', () => {
+    document.getElementById('inputProspectName').value = leadProfile.name || '';
+    document.getElementById('inputProspectCompany').value = leadProfile.company || '';
+    document.getElementById('inputProspectTitle').value = leadProfile.title || '';
+    document.getElementById('inputProspectEmail').value = leadProfile.email || '';
+    editProspectModal.classList.add('open');
+  });
+
+  btnCloseProspectModal?.addEventListener('click', () => editProspectModal.classList.remove('open'));
+
+  btnSaveProspect?.addEventListener('click', () => {
+    leadProfile.name = document.getElementById('inputProspectName').value.trim() || 'Alex Mercer';
+    leadProfile.company = document.getElementById('inputProspectCompany').value.trim() || 'Enterprise Solutions';
+    leadProfile.title = document.getElementById('inputProspectTitle').value.trim() || 'VP of Operations';
+    leadProfile.email = document.getElementById('inputProspectEmail').value.trim() || 'alex@enterprise.com';
+    editProspectModal.classList.remove('open');
+    addSystemNote(`Prospect profile updated: ${leadProfile.name} (${leadProfile.title} at ${leadProfile.company})`);
+  });
+
+  // 6. Print Deal Dossier
+  document.getElementById('btnPrintDossier')?.addEventListener('click', () => {
+    window.print();
   });
 
   // Ensure speech synthesis voices are populated in Chrome/Safari

@@ -61,5 +61,12 @@
     "title": "Business ROI and Cost Comparison",
     "content": "A human SDR costs an average of $75,000 annually with salary, benefits, and tools, making roughly 60-80 calls per day with a 3% connection rate. ApexAI operates at approximately $0.04 per call minute, delivers 10x higher call volume capacity, responds to inbound inquiries within 15 seconds, and increases qualified pipeline by 320% while reducing customer acquisition costs (CAC) by 65%. Typical payback period is 21 to 28 days.",
     "keywords": ["roi", "cost comparison", "cac", "savings", "payback", "business value", "conversion rate", "pipeline", "financial", "ahorro"]
+  },
+  {
+    "id": "battlecard-competitors",
+    "category": "competitors",
+    "title": "Competitor Intelligence & Battlecard (ApexAI vs Bland AI / Retell / Outreach)",
+    "content": "ApexAI distinguishes itself from generic voice developer APIs (such as Bland AI, Retell, or Vapi) by delivering an end-to-end autonomous revenue engine rather than a raw API. Key differentiators: 1. Native bidirectional CRM BANT sync without third-party middleware; 2. In-call objection handling playbooks grounded in verified RAG knowledge; 3. Built-in compliance (HIPAA BAA and SOC2 Type II); 4. Sub-450ms end-to-end voice latency with real-time barge-in interruption detection.",
+    "keywords": ["bland", "bland ai", "retell", "vapi", "outreach", "salesloft", "gong", "competitor", "alternative", "versus", "vs", "compare"]
   }
 ]

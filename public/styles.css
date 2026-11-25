@@ -941,3 +941,119 @@ main {
   max-height: 220px;
   overflow-y: auto;
 }
+
+/* =======================================================
+   TELEPHONY HUD & ADVANCED ENTERPRISE CALL CONTROLS
+======================================================= */
+.telephony-hud {
+  width: 100%;
+  max-width: 580px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  padding: 0.5rem 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  margin-bottom: 0.75rem;
+  backdrop-filter: blur(8px);
+}
+
+.hud-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.hud-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  animation: pulse 1.5s infinite;
+}
+
+.hud-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.hud-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 0.25rem 0.55rem;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hud-btn:hover {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: #3b82f6;
+}
+
+.hud-btn.active {
+  background: #ef4444;
+  border-color: #f87171;
+  color: #fff;
+}
+
+/* Competitor Battlecard Alert */
+.competitor-card {
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
+  animation: pulseAmber 2.5s infinite ease-in-out;
+}
+
+@keyframes pulseAmber {
+  0% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.15); }
+  50% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.35); }
+  100% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.15); }
+}
+
+/* Range Sliders */
+input[type="range"] {
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+/* Print Styles for Deal Dossier */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  header, .demo-banner, .modal-footer, .nav-tabs, .btn-demo, .close-btn {
+    display: none !important;
+  }
+  .modal-overlay {
+    position: static !important;
+    background: none !important;
+  }
+  .modal-card {
+    border: none !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+    color: #000 !important;
+  }
+  .summary-block {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #000 !important;
+  }
+  .summary-block h4 {
+    color: #1e3a8a !important;
+  }
+  .summary-block p, .summary-block li {
+    color: #1e293b !important;
+  }
+  .email-preview {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+}

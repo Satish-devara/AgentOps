@@ -129,6 +129,20 @@ class ConversationEngine {
     // 3. Extract Specific Technical & Business Requirements
     const extractedReqs = this.extractRequirements(userSpeech, session);
 
+    // 3B. Competitor Intelligence & Battlecard Trigger
+    let competitorAlert = null;
+    const lowerSpeech = userSpeech.toLowerCase();
+    if (/\b(bland|bland ai|retell|vapi|outreach|salesloft|gong|air ai)\b/i.test(lowerSpeech)) {
+      const compName = lowerSpeech.match(/\b(bland ai|bland|retell|vapi|outreach|salesloft|gong|air ai)\b/i)[0];
+      competitorAlert = {
+        name: compName.toUpperCase(),
+        threatLevel: 'Medium (Evaluating Alternative)',
+        keyAdvantage: 'ApexAI provides turnkey CRM BANT sync, sub-450ms latency, and HIPAA/SOC2 compliance out-of-the-box without requiring custom developer glue code.',
+        winRate: '87% win-rate in enterprise bake-offs'
+      };
+      session.topicsCovered.add('competitor');
+    }
+
     // 4. Append User Utterance to Transcript
     session.transcript.push({
       role: 'user',
@@ -224,7 +238,8 @@ class ConversationEngine {
       qualification: session.bantResult,
       booking: session.appointment,
       state: session.state,
-      lead: session.lead
+      lead: session.lead,
+      competitorAlert
     };
   }
 
@@ -420,8 +435,15 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 8. CRM & INTEGRATION INQUIRIES
+    // 7B. COMPETITOR BATTLECARDS (Bland AI, Retell, Vapi, Gong, Outreach)
     // ==========================================
+    if (/\b(bland|bland ai|retell|vapi|outreach|salesloft|gong|air ai|competitor|alternative)\b/i.test(lower)) {
+      session.topicsCovered.add('competitors');
+      const comp = /bland/i.test(lower) ? 'Bland AI' : /retell/i.test(lower) ? 'Retell' : /vapi/i.test(lower) ? 'Vapi' : /gong/i.test(lower) ? 'Gong' : 'generic voice APIs';
+      return {
+        speechText: `That's a great comparison! While ${comp} focuses on developer APIs requiring custom engineering to glue together, ApexAI is a turnkey Autonomous Revenue Engine. We provide native bidirectional CRM BANT sync, sub-450ms voice latency, and full SOC2 Type II & HIPAA compliance out-of-the-box with zero custom coding. Would you like to see how our pipeline conversion compares in a live demo?`
+      };
+    }
     if (/hubspot|salesforce|zoho|pipedrive|crm|webhook|api|integrate|integration/i.test(lower)) {
       session.topicsCovered.add('integrations');
       const crmMentioned = /hubspot/i.test(lower) ? 'HubSpot' : /salesforce/i.test(lower) ? 'Salesforce' : /zoho/i.test(lower) ? 'Zoho' : 'your CRM';
