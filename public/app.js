@@ -321,9 +321,18 @@ document.addEventListener('DOMContentLoaded', () => {
     utterance.rate = 1.05;
     utterance.pitch = 1.0;
 
-    // Pick a natural-sounding voice if available
+    // Pick a native high-quality voice for this specific language
     const voices = window.speechSynthesis.getVoices();
-    const targetVoice = voices.find(v => v.lang.startsWith(utterance.lang) && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Zira')));
+    const langPrefix = (utterance.lang || 'en').split('-')[0].toLowerCase();
+    
+    // First priority: A native voice whose lang starts with the exact code (e.g. 'fr-FR', 'de-DE', 'ja-JP', 'es-ES')
+    let targetVoice = voices.find(v => v.lang.replace('_', '-').toLowerCase().startsWith(utterance.lang.toLowerCase()));
+    
+    // Second priority: Any voice matching the 2-letter language prefix
+    if (!targetVoice) {
+      targetVoice = voices.find(v => v.lang.replace('_', '-').toLowerCase().startsWith(langPrefix));
+    }
+    
     if (targetVoice) {
       utterance.voice = targetVoice;
     }

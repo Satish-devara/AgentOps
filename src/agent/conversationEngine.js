@@ -52,25 +52,25 @@ class ConversationEngine {
     if (!text) return 'en';
     const normalized = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
-    // Spanish Detection
-    if (/\b(hola|buenos dias|buenas tardes|precio|precios|cuanto|gracias|empresa|ayuda|hablas espanol|espanol|gustaria|conocer|necesito|quiero|planes|costo|costos)\b/i.test(normalized) || /[¿¡]/.test(text)) {
-      return 'es';
+    // Japanese Detection
+    if (/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(text) || /\b(konnichiwa|arigatou|ohayo|nihongo|desu|kudasai)\b/i.test(normalized)) {
+      return 'ja';
     }
     // Hindi Detection
-    if (/\b(namaste|kaise|aap|kya|shukriya|daam|kimat|hindi)\b/i.test(normalized) || /[\u0900-\u097F]/.test(text)) {
+    if (/[\u0900-\u097F]/.test(text) || /\b(namaste|kaise|aap|kya|shukriya|daam|kimat|hindi)\b/i.test(normalized)) {
       return 'hi';
     }
     // French Detection
-    if (/\b(bonjour|salut|merci|combien|prix|comment|francais)\b/i.test(normalized)) {
+    if (/\b(bonjour|salut|merci|combien|prix|comment|francais|tarifs|fonctionnalites|pouvez|vous|equipe|societe|cout|coutent)\b/i.test(normalized)) {
       return 'fr';
     }
     // German Detection
-    if (/\b(hallo|guten tag|danke|kosten|preis|wie viel|deutsch)\b/i.test(normalized)) {
+    if (/\b(hallo|guten tag|danke|kosten|preis|preise|wie viel|deutsch|funktionieren|unternehmen|angebot|kostet|termin)\b/i.test(normalized)) {
       return 'de';
     }
-    // Japanese Detection
-    if (/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(text) || /\b(konnichiwa|arigatou)\b/i.test(normalized)) {
-      return 'ja';
+    // Spanish Detection
+    if (/\b(hola|buenos dias|buenas tardes|precio|precios|cuanto|gracias|empresa|ayuda|hablas espanol|espanol|gustaria|conocer|necesito|quiero|planes|costo|costos)\b/i.test(normalized) || /[¿¡]/.test(text)) {
+      return 'es';
     }
     return 'en';
   }
@@ -98,7 +98,7 @@ class ConversationEngine {
     if (/hipaa|soc2|gdpr|compliance|security/i.test(lower)) reqs.push('HIPAA / SOC2 Compliance');
 
     // Multilingual
-    if (/spanish|hindi|french|german|japanese|multilingual|idiomas|espanol/i.test(lower)) {
+    if (/spanish|hindi|french|german|japanese|multilingual|idiomas|espanol|francais|deutsch|nihongo/i.test(lower)) {
       reqs.push('Multilingual 24/7 Coverage');
     }
 
@@ -112,9 +112,14 @@ class ConversationEngine {
       session.lead = { ...session.lead, ...clientMetadata.lead };
     }
 
-    // 1. Dynamic Language Detection (Utterance language overrides default unless explicitly set)
+    // 1. Dynamic Language Detection
     const autoLang = this.detectLanguage(userSpeech);
-    const detectedLang = autoLang !== 'en' ? autoLang : (clientMetadata.language || 'en');
+    let detectedLang = 'en';
+    if (autoLang !== 'en') {
+      detectedLang = autoLang;
+    } else if (clientMetadata.language && clientMetadata.language !== 'en') {
+      detectedLang = clientMetadata.language;
+    }
     session.language = detectedLang;
 
     // 2. Real-time Sentiment Analysis
@@ -155,9 +160,9 @@ class ConversationEngine {
     // 7. Check for Calendar Booking Triggers
     let bookingAction = null;
     const lower = userSpeech.toLowerCase();
-    const isBookingIntent = /\b(book|schedule|calendar|demo|slot|time|meet|appointment|yes please|sounds good|let's do it|sure|thursday|tuesday|wednesday|friday|tomorrow)\b/i.test(lower) && 
-      (session.state === 'BOOKING_OFFER' || /demo|schedule|call|meet/i.test(lower));
-    const isDirectBookingRequest = /\b(book a demo|schedule a demo|schedule a call|set up a meeting|book it)\b/i.test(lower);
+    const isBookingIntent = /\b(book|schedule|calendar|demo|slot|time|meet|appointment|yes please|sounds good|let's do it|sure|thursday|tuesday|wednesday|friday|tomorrow|oui|ja|hai)\b/i.test(lower) && 
+      (session.state === 'BOOKING_OFFER' || /demo|schedule|call|meet|termin|reunion|demostracion/i.test(lower));
+    const isDirectBookingRequest = /\b(book a demo|schedule a demo|schedule a call|set up a meeting|book it|prendre rdv|termin vereinbaren|デモ予約)\b/i.test(lower);
 
     if (isBookingIntent || isDirectBookingRequest) {
       const openSlots = calendarService.getSlots();
@@ -189,7 +194,7 @@ class ConversationEngine {
       }
     }
 
-    // 8. Generate Specific Response
+    // 8. Generate Specific Multilingual Response
     const agentResponse = this.composeResponse(session, userSpeech, ragMatches, sentiment, bookingAction, extractedReqs);
 
     session.transcript.push({
@@ -229,7 +234,7 @@ class ConversationEngine {
     const cleanLower = userSpeech.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
     // ==========================================
-    // 1. SPANISH LANGUAGE RESPONSES
+    // 1. SPANISH LANGUAGE RESPONSES (es)
     // ==========================================
     if (lang === 'es') {
       if (bookingAction) {
@@ -265,7 +270,115 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 2. HINDI LANGUAGE RESPONSES
+    // 2. FRENCH LANGUAGE RESPONSES (fr)
+    // ==========================================
+    if (lang === 'fr') {
+      if (bookingAction) {
+        return {
+          speechText: `Parfait ! J'ai réservé votre démonstration pour le ${bookingAction.slotText} avec ${bookingAction.host}. Une invitation avec le lien Google Meet vous a été envoyée. Quels aspects techniques souhaitez-vous découvrir en priorité ?`
+        };
+      }
+      if (/prix|tarif|tarifs|combien|cout|coutent/i.test(cleanLower)) {
+        session.state = 'BOOKING_OFFER';
+        return {
+          speechText: `Bonjour ! Nous proposons trois offres transparentes : Starter à 499 $ par mois pour 500 minutes, Growth à 1 499 $ pour 2 500 minutes avec qualification BANT et intégration CRM, et Enterprise à 4 999 $ par mois avec appels simultanés illimités et conformité SOC2 et HIPAA. Combien d'appels ou de prospects traitez-vous chaque mois ?`
+        };
+      }
+      if (/securite|rgpd|hipaa|soc2|donnees/i.test(cleanLower)) {
+        return {
+          speechText: `La sécurité est au cœur de notre plateforme : nous sommes certifiés SOC2 Type II, conformes au RGPD et à HIPAA. Toutes les données sont chiffrées en transit et au repos (AES-256), sans aucune réutilisation pour l'entraînement d'IA. Votre équipe a-t-elle des exigences d'audit particulières ?`
+        };
+      }
+      if (/crm|hubspot|salesforce|integrer|integration/i.test(cleanLower)) {
+        return {
+          speechText: `Oui, nous disposons d'intégrations bidirectionnelles natives avec HubSpot, Salesforce, Zoho et des webhooks temps réel. Ava synchronise automatiquement les notes d'appels et met à jour les étapes d'opportunités. Quel CRM utilisez-vous actuellement ?`
+        };
+      }
+      if (/demo|demonstration|rendez-vous|rdv|reserver/i.test(cleanLower)) {
+        session.state = 'BOOKING_OFFER';
+        return {
+          speechText: `Avec grand plaisir ! Je peux vous réserver un créneau de 15 minutes avec Sarah Chen, notre Responsable Solutions Entreprise. Ce jeudi à 14h00 conviendrait-il à votre calendrier ?`
+        };
+      }
+      return {
+        speechText: `Bonjour ! Je suis Ava, chargée de solutions chez ApexAI. Nos agents vocaux autonomes qualifient vos prospects entrants et sortants 24h/24 avec une latence inférieure à 450 millisecondes. Souhaitez-vous découvrir nos tarifs ou planifier une démonstration ?`
+      };
+    }
+
+    // ==========================================
+    // 3. GERMAN LANGUAGE RESPONSES (de)
+    // ==========================================
+    if (lang === 'de') {
+      if (bookingAction) {
+        return {
+          speechText: `Ausgezeichnet! Ich habe Ihre persönliche Demo für ${bookingAction.slotText} mit ${bookingAction.host} gebucht. Eine Kalendereinladung mit Google Meet-Link wurde erstellt. Welche Workflows möchten Sie zuerst sehen?`
+        };
+      }
+      if (/preis|preise|kosten|kostet|wie viel|tarife/i.test(cleanLower)) {
+        session.state = 'BOOKING_OFFER';
+        return {
+          speechText: `Guten Tag! Bei ApexAI bieten wir drei Pläne: Starter ab 499 $ pro Monat für 500 Minuten, Growth ab 1.499 $ für 2.500 Minuten mit automatischer BANT-Qualifizierung und CRM-Synchronisation, sowie Enterprise ab 4.999 $ mit unbegrenzten parallelen Anrufen und voller SOC2- und HIPAA-Konformität. Wie viele Leads bearbeitet Ihr Vertriebsteam monatlich?`
+        };
+      }
+      if (/sicherheit|dsgvo|soc2|hipaa|datenschutz/i.test(cleanLower)) {
+        return {
+          speechText: `Sicherheit hat bei uns höchste Priorität: Wir sind SOC2 Typ II zertifiziert, DSGVO-konform und unterstützen HIPAA. Alle Gespräche werden mit TLS 1.3 und AES-256 verschlüsselt, ohne Weiterverwendung für Modell-Training. Gibt es spezifische Compliance-Anforderungen Ihres Teams?`
+        };
+      }
+      if (/crm|hubspot|salesforce|integration/i.test(cleanLower)) {
+        return {
+          speechText: `Ja, wir bieten native bidirektionale Integrationen für Salesforce, HubSpot, Zoho und individuelle Webhooks in Echtzeit. Alle Anrufnotizen und BANT-Ergebnisse werden automatisch im CRM protokolliert. Welches CRM nutzen Sie derzeit?`
+        };
+      }
+      if (/demo|termin|buchen|vereinbaren/i.test(cleanLower)) {
+        session.state = 'BOOKING_OFFER';
+        return {
+          speechText: `Sehr gerne! Ich kann Ihnen einen exklusiven 15-minütigen Demo-Termin mit Sarah Chen reservieren. Würde Ihnen Donnerstag um 14:00 Uhr passen?`
+        };
+      }
+      return {
+        speechText: `Guten Tag! Ich bin Ava von ApexAI. Unsere autonomen KI-Sprachagenten qualifizieren Leads rund um die Uhr mit einer Latenz von unter 450 Millisekunden. Möchten Sie mehr über unsere Preise erfahren oder eine Live-Demo vereinbaren?`
+      };
+    }
+
+    // ==========================================
+    // 4. JAPANESE LANGUAGE RESPONSES (ja)
+    // ==========================================
+    if (lang === 'ja') {
+      if (bookingAction) {
+        return {
+          speechText: `ご予約ありがとうございます！${bookingAction.slotText}にSarah Chenとの個別デモを設定いたしました。Google Meetの参加リンク付きカレンダー招待状をお送りしました。当日特に確認したい機能はございますか？`
+        };
+      }
+      if (/料金|プラン|いくら|価格|費用|コスト/i.test(userSpeech)) {
+        session.state = 'BOOKING_OFFER';
+        return {
+          speechText: `こんにちは！ApexAIでは3つの料金プランをご用意しております。スタータープランは月額499ドル（500分）、グロースプランは月額1,499ドル（2,500分・自動BANT資格認定付き）、エンタープライズプランは月額4,999ドル（同時通話無制限・SOC2およびHIPAA対応）です。現在、貴社では毎月どのくらいのリードや通話件数がございますか？`
+        };
+      }
+      if (/セキュリティ|安全|hipaa|soc2|個人情報/i.test(userSpeech)) {
+        return {
+          speechText: `セキュリティは最優先事項です。SOC2 Type II認証を取得し、通信はTLS 1.3、保管データはAES-256で暗号化されています。お客様の会話データがAIモデルの再学習に使用されることは一切ございません。`
+        };
+      }
+      if (/crm|salesforce|hubspot|連携/i.test(userSpeech)) {
+        return {
+          speechText: `はい、Salesforce、HubSpot、Zohoとの双方向リアルタイム連携に対応しております。通話履歴、BANT評価スコア、要約データが自動的にCRMへ反映されます。`
+        };
+      }
+      if (/デモ|予約|相談|ミーティング/i.test(userSpeech)) {
+        session.state = 'BOOKING_OFFER';
+        return {
+          speechText: `かしこまりました！弊社の専属ソリューション担当者との15分間のオンラインデモをご案内できます。今週木曜日の午後2時（EST）のご都合はいかがでしょうか？`
+        };
+      }
+      return {
+        speechText: `こんにちは！ApexAIの専任セールスエージェントAvaです。リアルタイム（遅延450ミリ秒未満）の音声AIが、貴社のインバウンドおよびアウトバウンド営業を24時間自動化します。料金プランやデモ予約についてご案内いたしましょうか？`
+      };
+    }
+
+    // ==========================================
+    // 5. HINDI LANGUAGE RESPONSES (hi)
     // ==========================================
     if (lang === 'hi') {
       if (bookingAction) {
@@ -273,7 +386,7 @@ class ConversationEngine {
           speechText: `बहुत बढ़िया! आपकी डेमो कॉल ${bookingAction.slotText} को ${bookingAction.host} के साथ बुक कर दी गई है। क्या आप कुछ और विवरण जानना चाहते हैं?`
         };
       }
-      if (/daam|kimat|price|pricing|cost/i.test(lower)) {
+      if (/daam|kimat|price|pricing|cost|kya rate/i.test(lower)) {
         return {
           speechText: `नमस्ते! हमारे तीन मुख्य प्लान हैं: स्टार्टर $499/माह, ग्रोथ $1,499/माह और एंटरप्राइज $4,999/माह जिसमें असीमित कॉल्स और 24/7 सीआरएम सिंक शामिल है। क्या आप इस सप्ताह लाइव डेमो देखना चाहेंगे?`
         };
@@ -284,7 +397,7 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 3. APPOINTMENT JUST CONFIRMED
+    // 6. APPOINTMENT JUST CONFIRMED (en)
     // ==========================================
     if (bookingAction) {
       session.topicsCovered.add('booking');
@@ -294,7 +407,7 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 4. GREETINGS (Any greeting: "hey hi eva", "hello", "hi ava", "good morning")
+    // 7. GREETINGS (Any greeting: "hey hi eva", "hello", "hi ava", "good morning")
     // ==========================================
     const isGreetingPattern = /\b(hi|hello|hey|good morning|good afternoon|hiya|greetings|yo|morning)\b/i.test(lower);
     const hasSpecificContent = /price|pricing|cost|budget|hubspot|salesforce|crm|leads|calls|hipaa|soc2|robotic|demo|schedule|book|feature|replace/i.test(lower);
@@ -307,7 +420,7 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 5. CRM & INTEGRATION INQUIRIES
+    // 8. CRM & INTEGRATION INQUIRIES
     // ==========================================
     if (/hubspot|salesforce|zoho|pipedrive|crm|webhook|api|integrate|integration/i.test(lower)) {
       session.topicsCovered.add('integrations');
@@ -318,7 +431,7 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 6. VOLUME, SCALING & CALL CAPACITY
+    // 9. VOLUME, SCALING & CALL CAPACITY
     // ==========================================
     if (/\b(\d+[\d,]*\s*(leads|calls|minutes|dials|inbound|outbound))\b/i.test(lower) || /volume|capacity|concurrency|spike|throughput|scale/i.test(lower)) {
       session.topicsCovered.add('volume');
@@ -331,7 +444,7 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 7. PRICING, PLANS & COST
+    // 10. PRICING, PLANS & COST
     // ==========================================
     if (/\b(how much|pricing|price|cost|tiers|plans|expensive|afford|budget)\b/i.test(lower)) {
       session.topicsCovered.add('pricing');
@@ -347,7 +460,7 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 8. SECURITY, HIPAA, SOC2 & COMPLIANCE
+    // 11. SECURITY, HIPAA, SOC2 & COMPLIANCE
     // ==========================================
     if (/hipaa|soc2|gdpr|security|compliance|privacy|safe|encrypt|baa|data/i.test(lower)) {
       session.topicsCovered.add('security');
@@ -357,7 +470,7 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 9. VOICE QUALITY & OBJECTION ("Sounds robotic")
+    // 12. VOICE QUALITY & OBJECTION ("Sounds robotic")
     // ==========================================
     if (/robotic|robot|unnatural|fake|human sounding|accent|quality|natural/i.test(lower)) {
       session.topicsCovered.add('voice_quality');
@@ -367,7 +480,7 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 10. HUMAN SDR COEXISTENCE ("Replace my reps")
+    // 13. HUMAN SDR COEXISTENCE ("Replace my reps")
     // ==========================================
     if (/replace|layoff|human reps|my team|sdr team|job/i.test(lower)) {
       session.topicsCovered.add('team_coexistence');
@@ -377,7 +490,7 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 11. TECHNICAL SPECS, TELEPHONY & LATENCY
+    // 14. TECHNICAL SPECS, TELEPHONY & LATENCY
     // ==========================================
     if (/latency|architecture|webrtc|sip|telephony|pbx|genesys|avaya|deepgram|whisper|tech/i.test(lower)) {
       session.topicsCovered.add('architecture');
@@ -387,7 +500,7 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 12. EXPLICIT DEMO OR BOOKING REQUEST
+    // 15. EXPLICIT DEMO OR BOOKING REQUEST
     // ==========================================
     if (/book|schedule|demo|meeting|calendar|call me|talk to a human/i.test(lower)) {
       session.state = 'BOOKING_OFFER';
@@ -399,7 +512,7 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 13. CONVERSATIONAL COMMON INQUIRIES
+    // 16. CONVERSATIONAL COMMON INQUIRIES
     // ==========================================
     if (/who are you|what is your name/i.test(lower)) {
       return {
@@ -433,7 +546,7 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 14. DYNAMIC RAG RETRIEVAL MATCH
+    // 17. DYNAMIC RAG RETRIEVAL MATCH
     // ==========================================
     if (ragMatches.length > 0 && ragMatches[0].score >= 0.12) {
       const top = ragMatches[0];
@@ -459,7 +572,7 @@ class ConversationEngine {
     }
 
     // ==========================================
-    // 15. ENGAGING CONVERSATIONAL FALLBACK
+    // 18. ENGAGING CONVERSATIONAL FALLBACK
     // ==========================================
     return {
       speechText: `I appreciate you sharing that! ApexAI is fully customizable to your sales scripts, CRM workflows, and qualification criteria. To give you the exact ROI projection, could you tell me a little about your current monthly lead volume and the size of your sales team?`
