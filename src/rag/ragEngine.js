@@ -26,6 +26,8 @@ class RAGEngine {
   tokenize(text) {
     if (!text) return [];
     return text
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .replace(/[^\w\s$]/g, ' ')
       .split(/\s+/)
@@ -35,7 +37,8 @@ class RAGEngine {
   isStopword(w) {
     const stops = new Set([
       'the', 'is', 'at', 'which', 'on', 'and', 'a', 'an', 'in', 'to', 'for', 'of', 'with',
-      'that', 'it', 'as', 'are', 'was', 'be', 'this', 'our', 'we', 'you', 'your', 'i', 'my'
+      'that', 'it', 'as', 'are', 'was', 'be', 'this', 'our', 'we', 'you', 'your', 'i', 'my',
+      'de', 'la', 'el', 'en', 'y', 'los', 'las', 'un', 'una', 'por'
     ]);
     return stops.has(w);
   }

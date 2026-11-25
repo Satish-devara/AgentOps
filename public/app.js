@@ -247,6 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Quick Chips
   document.querySelectorAll('.chip').forEach(chip => {
     chip.addEventListener('click', () => {
+      textInput.value = '';
       const text = chip.dataset.text;
       handleUserUtterance(text);
     });
@@ -279,6 +280,14 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const data = await response.json();
+
+      // Automatically sync UI language if another language was spoken
+      if (data.language && data.language !== currentLanguage) {
+        currentLanguage = data.language;
+        langSelect.value = data.language;
+        addSystemNote(`Language dynamically adapted to ${langSelect.options[langSelect.selectedIndex]?.text || data.language}`);
+      }
+
       renderTelemetry(data);
 
       // Append Agent Bubble

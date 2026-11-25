@@ -32,7 +32,6 @@ class ConversationEngine {
         sentimentHistory: [],
         ragCitations: [],
         topicsCovered: new Set(),
-        detectedRequirements: new Set(),
         lead: {
           id: `LEAD-${Date.now().toString().slice(-4)}`,
           name: 'Alex Mercer',
@@ -51,12 +50,28 @@ class ConversationEngine {
 
   detectLanguage(text) {
     if (!text) return 'en';
-    const lower = text.toLowerCase();
-    if (/\b(hola|buenos dias|buenas tardes|precio|cuanto|gracias|empresa|ayuda|hablas español)\b/i.test(lower)) return 'es';
-    if (/\b(namaste|kaise|aap|kya|shukriya|daam|kimat|hindi)\b/i.test(lower) || /[\u0900-\u097F]/.test(text)) return 'hi';
-    if (/\b(bonjour|salut|merci|combien|prix|comment|francais)\b/i.test(lower)) return 'fr';
-    if (/\b(hallo|guten tag|danke|kosten|preis|wie viel|deutsch)\b/i.test(lower)) return 'de';
-    if (/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(text) || /\b(konnichiwa|arigatou)\b/i.test(lower)) return 'ja';
+    const normalized = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+    // Spanish Detection
+    if (/\b(hola|buenos dias|buenas tardes|precio|precios|cuanto|gracias|empresa|ayuda|hablas espanol|espanol|gustaria|conocer|necesito|quiero|planes|costo|costos)\b/i.test(normalized) || /[¿¡]/.test(text)) {
+      return 'es';
+    }
+    // Hindi Detection
+    if (/\b(namaste|kaise|aap|kya|shukriya|daam|kimat|hindi)\b/i.test(normalized) || /[\u0900-\u097F]/.test(text)) {
+      return 'hi';
+    }
+    // French Detection
+    if (/\b(bonjour|salut|merci|combien|prix|comment|francais)\b/i.test(normalized)) {
+      return 'fr';
+    }
+    // German Detection
+    if (/\b(hallo|guten tag|danke|kosten|preis|wie viel|deutsch)\b/i.test(normalized)) {
+      return 'de';
+    }
+    // Japanese Detection
+    if (/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(text) || /\b(konnichiwa|arigatou)\b/i.test(normalized)) {
+      return 'ja';
+    }
     return 'en';
   }
 
@@ -65,34 +80,26 @@ class ConversationEngine {
     const reqs = [];
 
     // CRMs
-    if (/hubspot/i.test(lower)) { reqs.push('HubSpot Integration'); session.detectedRequirements.add('HubSpot'); }
-    if (/salesforce/i.test(lower)) { reqs.push('Salesforce Integration'); session.detectedRequirements.add('Salesforce'); }
-    if (/zoho/i.test(lower)) { reqs.push('Zoho CRM'); session.detectedRequirements.add('Zoho'); }
-    if (/pipedrive/i.test(lower)) { reqs.push('Pipedrive CRM'); session.detectedRequirements.add('Pipedrive'); }
-    if (/webhook|api/i.test(lower)) { reqs.push('Custom Webhooks & REST API'); session.detectedRequirements.add('Webhooks'); }
+    if (/hubspot/i.test(lower)) reqs.push('HubSpot Integration');
+    if (/salesforce/i.test(lower)) reqs.push('Salesforce Integration');
+    if (/zoho/i.test(lower)) reqs.push('Zoho CRM');
+    if (/pipedrive/i.test(lower)) reqs.push('Pipedrive CRM');
+    if (/webhook|api/i.test(lower)) reqs.push('Webhooks & REST API');
 
-    // Telephony & Infrastructure
-    if (/webrtc|sip|twilio|telephony|phone system|genesys|avaya/i.test(lower)) {
-      reqs.push('Telephony & SIP Trunking');
-      session.detectedRequirements.add('SIP/Telephony');
+    // Telephony
+    if (/webrtc|sip|twilio|telephony|phone system/i.test(lower)) reqs.push('SIP/WebRTC Telephony');
+
+    // Volume
+    if (/\b\d+[\d,]*\s*(leads|calls|minutes|dials)\b/i.test(lower) || /volume|speed to lead/i.test(lower)) {
+      reqs.push('High Volume Capacity');
     }
 
-    // Call Volume & Speed
-    if (/\b(\d+[\d,]*\s*(leads|calls|minutes|dials|inbound|outbound))\b/i.test(lower) || /volume|speed to lead/i.test(lower)) {
-      reqs.push('High Volume Throughput');
-      session.detectedRequirements.add('High-Volume');
-    }
-
-    // Security & Compliance
-    if (/hipaa|soc2|gdpr|compliance|security|privacy|encryption/i.test(lower)) {
-      reqs.push('HIPAA / SOC2 Compliance');
-      session.detectedRequirements.add('Compliance');
-    }
+    // Security
+    if (/hipaa|soc2|gdpr|compliance|security/i.test(lower)) reqs.push('HIPAA / SOC2 Compliance');
 
     // Multilingual
-    if (/spanish|hindi|french|german|japanese|multilingual|languages/i.test(lower)) {
+    if (/spanish|hindi|french|german|japanese|multilingual|idiomas|espanol/i.test(lower)) {
       reqs.push('Multilingual 24/7 Coverage');
-      session.detectedRequirements.add('Multilingual');
     }
 
     return reqs;
@@ -105,8 +112,9 @@ class ConversationEngine {
       session.lead = { ...session.lead, ...clientMetadata.lead };
     }
 
-    // 1. Language Detection
-    const detectedLang = clientMetadata.language || this.detectLanguage(userSpeech);
+    // 1. Dynamic Language Detection (Utterance language overrides default unless explicitly set)
+    const autoLang = this.detectLanguage(userSpeech);
+    const detectedLang = autoLang !== 'en' ? autoLang : (clientMetadata.language || 'en');
     session.language = detectedLang;
 
     // 2. Real-time Sentiment Analysis
@@ -181,7 +189,7 @@ class ConversationEngine {
       }
     }
 
-    // 8. Generate Highly Specific & Non-Repetitive Response
+    // 8. Generate Specific Response
     const agentResponse = this.composeResponse(session, userSpeech, ragMatches, sentiment, bookingAction, extractedReqs);
 
     session.transcript.push({
@@ -218,30 +226,56 @@ class ConversationEngine {
   composeResponse(session, userSpeech, ragMatches, sentiment, bookingAction, extractedReqs) {
     const lang = session.language;
     const lower = userSpeech.toLowerCase().trim();
-    const words = lower.split(/\s+/);
+    const cleanLower = userSpeech.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
-    // Multilingual Spanish
+    // ==========================================
+    // 1. SPANISH LANGUAGE RESPONSES
+    // ==========================================
     if (lang === 'es') {
       if (bookingAction) {
         return {
           speechText: `¡Excelente! He agendado nuestra demostración para el ${bookingAction.slotText} con ${bookingAction.host}. Le envié la invitación con el enlace de Google Meet. ¿Hay algún requisito técnico específico que desee revisar en la reunión?`
         };
       }
-      if (/precio|costo|cuanto/i.test(lower)) {
+      if (/precio|precios|costo|costos|planes|cuanto|tarifa/i.test(cleanLower)) {
+        session.state = 'BOOKING_OFFER';
         return {
-          speechText: `Nuestros planes comienzan en $499 al mes para Starter, $1,499 para Growth y $4,999 para Enterprise con llamadas simultáneas ilimitadas y soporte SOC2 y HIPAA. ¿Cuántas llamadas o minutos mensuales maneja su equipo actualmente?`
+          speechText: `¡Hola! Sí, hablo español perfectamente. En ApexAI ofrecemos tres planes: Starter a $499 al mes para 500 minutos, Growth a $1,499 para 2,500 minutos con calificación BANT automática e integración CRM, y Enterprise a $4,999 con llamadas ilimitadas y soporte SOC2 y HIPAA. ¿Cuántas llamadas o clientes potenciales maneja su empresa al mes?`
+        };
+      }
+      if (/seguridad|hipaa|soc2|privacidad|datos/i.test(cleanLower)) {
+        return {
+          speechText: `La seguridad es primordial en ApexAI: contamos con certificación SOC2 Tipo II, firmamos acuerdos BAA para HIPAA, y ciframos todo con TLS 1.3 y AES-256 con política de cero retención de datos. ¿Su equipo requiere auditorías de seguridad?`
+        };
+      }
+      if (/crm|hubspot|salesforce|zoho|integrar/i.test(cleanLower)) {
+        return {
+          speechText: `Sí, nos integramos de forma bidireccional con Salesforce, HubSpot, Zoho y Webhooks en tiempo real, guardando transcripciones completas y notas de calificación BANT automáticamente. ¿Qué CRM utiliza su equipo actualmente?`
+        };
+      }
+      if (/demostracion|demo|agendar|reunion|cita/i.test(cleanLower)) {
+        session.state = 'BOOKING_OFFER';
+        return {
+          speechText: `¡Con gusto! Puedo reservar una demostración personalizada con nuestra Ejecutiva Principal, Sarah Chen. ¿Le vendría bien este jueves a las 2:00 PM EST?`
         };
       }
       return {
-        speechText: `Hola, soy Ava de ApexAI. Diseñamos agentes de voz autónomos con latencia menor a 450 milisegundos e integración CRM en tiempo real. ¿Cuál es el principal objetivo o requerimiento que busca resolver hoy?`
+        speechText: `¡Hola! Sí, hablo español con fluidez. Soy Ava de ApexAI. Automatizamos llamadas de ventas con voz humana y latencia menor a 450 milisegundos. ¿Le gustaría conocer nuestros planes de precios o agendar una demostración en vivo?`
       };
     }
 
-    // Multilingual Hindi
+    // ==========================================
+    // 2. HINDI LANGUAGE RESPONSES
+    // ==========================================
     if (lang === 'hi') {
       if (bookingAction) {
         return {
           speechText: `बहुत बढ़िया! आपकी डेमो कॉल ${bookingAction.slotText} को ${bookingAction.host} के साथ बुक कर दी गई है। क्या आप कुछ और विवरण जानना चाहते हैं?`
+        };
+      }
+      if (/daam|kimat|price|pricing|cost/i.test(lower)) {
+        return {
+          speechText: `नमस्ते! हमारे तीन मुख्य प्लान हैं: स्टार्टर $499/माह, ग्रोथ $1,499/माह और एंटरप्राइज $4,999/माह जिसमें असीमित कॉल्स और 24/7 सीआरएम सिंक शामिल है। क्या आप इस सप्ताह लाइव डेमो देखना चाहेंगे?`
         };
       }
       return {
@@ -249,25 +283,33 @@ class ConversationEngine {
       };
     }
 
-    // 1. Appointment Just Confirmed
+    // ==========================================
+    // 3. APPOINTMENT JUST CONFIRMED
+    // ==========================================
     if (bookingAction) {
       session.topicsCovered.add('booking');
       return {
-        speechText: `Fantastic! I've locked in your executive demo for ${bookingAction.slotText} with ${bookingAction.host}. A calendar invite with the Google Meet link has been generated and synced to your profile. What specific integrations or custom playbooks would you like our team to showcase first during the session?`
+        speechText: `Fantastic! I've locked in your executive demo for ${bookingAction.slotText} with ${bookingAction.host}. A calendar invite with the Google Meet link has been generated and synced to your CRM profile. What specific integrations or custom playbooks would you like our team to showcase first during the session?`
       };
     }
 
-    // 2. Pure Greeting ONLY (e.g. "hi", "hello ava", "good morning") - Not mixed with requirements
-    const isPureGreeting = words.length <= 3 && /^(hi|hello|hey|good morning|good afternoon|hiya|greetings)( ava)?$/i.test(lower);
-    if (isPureGreeting && !session.topicsCovered.has('greeting')) {
+    // ==========================================
+    // 4. GREETINGS (Any greeting: "hey hi eva", "hello", "hi ava", "good morning")
+    // ==========================================
+    const isGreetingPattern = /\b(hi|hello|hey|good morning|good afternoon|hiya|greetings|yo|morning)\b/i.test(lower);
+    const hasSpecificContent = /price|pricing|cost|budget|hubspot|salesforce|crm|leads|calls|hipaa|soc2|robotic|demo|schedule|book|feature|replace/i.test(lower);
+
+    if (isGreetingPattern && !hasSpecificContent) {
       session.topicsCovered.add('greeting');
       return {
-        speechText: `Hello! I'm Ava, Senior Solutions Executive at ApexAI. We deploy autonomous voice agents that qualify inbound and outbound leads 24/7 with sub-450ms latency. Tell me a bit about your current sales setup—are you looking to scale outbound pipeline or automate inbound response time?`
+        speechText: `Hello! I'm Ava, Senior Solutions Executive at ApexAI. We deploy autonomous voice agents that qualify inbound and outbound leads 24/7 with sub-450ms latency. Are you looking to scale outbound pipeline, or automate inbound speed-to-lead for your team?`
       };
     }
 
-    // 3. CRM & Integration Inquiries (HubSpot, Salesforce, Zoho, Webhooks)
-    if (/hubspot|salesforce|zoho|pipedrive|crm|webhook|api|integrate/i.test(lower)) {
+    // ==========================================
+    // 5. CRM & INTEGRATION INQUIRIES
+    // ==========================================
+    if (/hubspot|salesforce|zoho|pipedrive|crm|webhook|api|integrate|integration/i.test(lower)) {
       session.topicsCovered.add('integrations');
       const crmMentioned = /hubspot/i.test(lower) ? 'HubSpot' : /salesforce/i.test(lower) ? 'Salesforce' : /zoho/i.test(lower) ? 'Zoho' : 'your CRM';
       return {
@@ -275,18 +317,22 @@ class ConversationEngine {
       };
     }
 
-    // 4. High Volume, Scaling & Call Capacity (e.g. "10000 leads", "500 calls a day", "too many calls")
-    if (/\b(\d+[\d,]*\s*(leads|calls|minutes|dials|inbound|outbound))\b/i.test(lower) || /volume|capacity|concurrency|spike|handle/i.test(lower)) {
+    // ==========================================
+    // 6. VOLUME, SCALING & CALL CAPACITY
+    // ==========================================
+    if (/\b(\d+[\d,]*\s*(leads|calls|minutes|dials|inbound|outbound))\b/i.test(lower) || /volume|capacity|concurrency|spike|throughput|scale/i.test(lower)) {
       session.topicsCovered.add('volume');
       const numMatch = userSpeech.match(/\b\d+[\d,]*\b/);
       const volNum = numMatch ? numMatch[0] : '';
-      const phrase = volNum ? `${volNum} leads per month` : 'that high lead volume';
+      const phrase = volNum ? `${volNum} leads per month` : 'high lead volume';
       return {
-        speechText: `Handling ${phrase} is exactly what our architecture is designed for. ApexAI supports unlimited concurrent lines with sub-450ms turnaround, meaning zero hold times even during peak marketing campaigns or inbound freight surges. We guarantee sub-minute speed-to-lead. What is your target timeline for rolling this capacity out?`
+        speechText: `Handling ${phrase} is exactly what our architecture is designed for. ApexAI supports unlimited concurrent lines with sub-450ms turnaround, meaning zero hold times even during peak marketing campaigns or inbound surges. We guarantee sub-minute speed-to-lead. What is your target timeline for rolling this capacity out?`
       };
     }
 
-    // 5. Pricing, Plans & Cost
+    // ==========================================
+    // 7. PRICING, PLANS & COST
+    // ==========================================
     if (/\b(how much|pricing|price|cost|tiers|plans|expensive|afford|budget)\b/i.test(lower)) {
       session.topicsCovered.add('pricing');
       if (/\b(budget|afford|expensive|costly)\b/i.test(lower) && session.bantResult.bant.budget.score > 0) {
@@ -300,7 +346,9 @@ class ConversationEngine {
       };
     }
 
-    // 6. Security, HIPAA, SOC2 & Compliance
+    // ==========================================
+    // 8. SECURITY, HIPAA, SOC2 & COMPLIANCE
+    // ==========================================
     if (/hipaa|soc2|gdpr|security|compliance|privacy|safe|encrypt|baa|data/i.test(lower)) {
       session.topicsCovered.add('security');
       return {
@@ -308,7 +356,9 @@ class ConversationEngine {
       };
     }
 
-    // 7. Voice Quality, Natural Prosody & Objection ("Sounds robotic")
+    // ==========================================
+    // 9. VOICE QUALITY & OBJECTION ("Sounds robotic")
+    // ==========================================
     if (/robotic|robot|unnatural|fake|human sounding|accent|quality|natural/i.test(lower)) {
       session.topicsCovered.add('voice_quality');
       return {
@@ -316,7 +366,9 @@ class ConversationEngine {
       };
     }
 
-    // 8. Human Team Coexistence & Objection ("Replace my SDRs")
+    // ==========================================
+    // 10. HUMAN SDR COEXISTENCE ("Replace my reps")
+    // ==========================================
     if (/replace|layoff|human reps|my team|sdr team|job/i.test(lower)) {
       session.topicsCovered.add('team_coexistence');
       return {
@@ -324,7 +376,9 @@ class ConversationEngine {
       };
     }
 
-    // 9. Technical Architecture, Telephony (WebRTC, SIP, PBX) & Latency
+    // ==========================================
+    // 11. TECHNICAL SPECS, TELEPHONY & LATENCY
+    // ==========================================
     if (/latency|architecture|webrtc|sip|telephony|pbx|genesys|avaya|deepgram|whisper|tech/i.test(lower)) {
       session.topicsCovered.add('architecture');
       return {
@@ -332,7 +386,9 @@ class ConversationEngine {
       };
     }
 
-    // 10. Explicit Demo or Booking Request ("Book a demo", "Let's schedule", "Set up a meeting")
+    // ==========================================
+    // 12. EXPLICIT DEMO OR BOOKING REQUEST
+    // ==========================================
     if (/book|schedule|demo|meeting|calendar|call me|talk to a human/i.test(lower)) {
       session.state = 'BOOKING_OFFER';
       const openSlot = calendarService.getSlots()[0];
@@ -342,24 +398,48 @@ class ConversationEngine {
       };
     }
 
-    // 11. Qualified Lead -> Dynamic Booking Push
-    if (session.bantResult.totalScore >= 45 && !session.topicsCovered.has('booking_pitch')) {
-      session.topicsCovered.add('booking_pitch');
-      session.state = 'BOOKING_OFFER';
-      const openSlot = calendarService.getSlots()[0];
-      const slotText = openSlot ? `${openSlot.date} at ${openSlot.time}` : 'Thursday at 10:00 AM EST';
+    // ==========================================
+    // 13. CONVERSATIONAL COMMON INQUIRIES
+    // ==========================================
+    if (/who are you|what is your name/i.test(lower)) {
       return {
-        speechText: `Based on what you've shared regarding your sales volume and timeline, ApexAI looks like an ideal match. I can reserve an exclusive 15-minute live architecture walkthrough for your team on ${slotText} with Sarah Chen. Would that slot work for your calendar?`
+        speechText: `I'm Ava, Senior Solutions Executive at ApexAI. I'm an autonomous sales voice agent engineered to handle inbound and outbound calls, qualify enterprise prospects with BANT criteria, and schedule meetings directly into your sales team's calendar.`
       };
     }
 
-    // 12. Dynamic RAG-Synthesized Response (Synthesizes facts into conversational sentences)
-    if (ragMatches.length > 0) {
+    if (/what can you do|features|capabilities|what do you do/i.test(lower)) {
+      return {
+        speechText: `I can conduct real-time voice conversations with sub-450ms latency, qualify leads using the BANT framework, answer technical and pricing questions via RAG retrieval, handle objections smoothly, and automatically book calendar appointments directly into your CRM.`
+      };
+    }
+
+    if (/how are you|how is it going/i.test(lower)) {
+      return {
+        speechText: `I'm doing fantastic, thank you! Excited to help you streamline your sales pipeline. What is the biggest challenge your sales team is currently facing with lead response times?`
+      };
+    }
+
+    if (/^(yes|sure|okay|sounds good|tell me more|go ahead|definitely)$/i.test(lower)) {
+      if (session.state === 'BOOKING_OFFER') {
+        const openSlot = calendarService.getSlots()[0];
+        const slotText = openSlot ? `${openSlot.date} at ${openSlot.time}` : 'tomorrow afternoon';
+        return {
+          speechText: `Awesome! I have ${slotText} available with Sarah Chen, Principal Enterprise AE. Would that time slot be perfect for your calendar?`
+        };
+      }
+      return {
+        speechText: `Excellent! We can walk through our pricing tiers or review our native CRM integrations. Which of those would be most helpful to explore first?`
+      };
+    }
+
+    // ==========================================
+    // 14. DYNAMIC RAG RETRIEVAL MATCH
+    // ==========================================
+    if (ragMatches.length > 0 && ragMatches[0].score >= 0.12) {
       const top = ragMatches[0];
-      // Generate clean contextual response based on the top matched category
       if (top.category === 'product') {
         return {
-          speechText: `ApexAI is designed specifically to automate both inbound speed-to-lead and outbound prospecting. It engages leads in conversational speech under 450ms, qualifies them with BANT criteria, and syncs everything directly into your CRM. What specific workflow would you like to automate first?`
+          speechText: `ApexAI is designed specifically to automate inbound speed-to-lead and outbound prospecting. It engages leads in conversational speech under 450ms, qualifies them with BANT criteria, and syncs everything directly into your CRM. What specific workflow would you like to automate first?`
         };
       }
       if (top.category === 'pricing') {
@@ -372,14 +452,17 @@ class ConversationEngine {
           speechText: `We adhere to enterprise security standards including SOC2 Type II, signed HIPAA BAAs, and zero retention on LLM training data. All audio is encrypted end-to-end with TLS 1.3 and AES-256. Are there specific security questionnaires your team needs completed?`
         };
       }
+      const firstSentence = top.content.split('.')[0] + '.';
       return {
-        speechText: `Regarding ${top.title.toLowerCase()}: ${top.content.split('.')[0]}. We can easily tailor this to your sales workflow. What is your team's timeline for deploying a solution?`
+        speechText: `Regarding ${top.title}: ${firstSentence} We can tailor this directly to your team's workflow. What is your team's target timeline for rolling out a solution?`
       };
     }
 
-    // 13. Conversational Fallback (Tailored to lead discovery)
+    // ==========================================
+    // 15. ENGAGING CONVERSATIONAL FALLBACK
+    // ==========================================
     return {
-      speechText: `Understood. ApexAI can be fully customized around your team's specific scripts, objection playbooks, and CRM fields. To give you the best recommendation, could you tell me a little about your target lead volume and current response times?`
+      speechText: `I appreciate you sharing that! ApexAI is fully customizable to your sales scripts, CRM workflows, and qualification criteria. To give you the exact ROI projection, could you tell me a little about your current monthly lead volume and the size of your sales team?`
     };
   }
 
