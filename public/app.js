@@ -94,7 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Initialize Speech Recognition (Web Speech API)
+  // Initialize Speech Recognition (Web Speech API) with Live Interim Streaming
+  let speechSilenceTimer = null;
+  let finalSpokenText = '';
+
   function initSpeechRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -103,41 +106,82 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.continuous = true; // Keep listening so multi-sentence requirements aren't cut off
+    recognition.interimResults = true; // Show live interim words as the user speaks
     recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
       isRecording = true;
+      finalSpokenText = '';
       btnMic.classList.add('recording');
       micIcon.textContent = '⏹️';
-      micText.textContent = 'Listening... Speak now';
-      stageStatus.textContent = 'Listening to your voice...';
-      stageSub.textContent = 'Ava is streaming your speech in real time.';
+      micText.textContent = 'Listening... (Click to Finish)';
+      stageStatus.textContent = 'Listening... Speak your requirements';
+      stageSub.textContent = 'Say your company, lead volume, budget, or CRM requirements...';
       voiceOrb.classList.add('listening');
       waveform.classList.add('active');
     };
 
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      handleUserUtterance(transcript);
+      let interimTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcriptPiece = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalSpokenText += (finalSpokenText ? ' ' : '') + transcriptPiece;
+        } else {
+          interimTranscript += transcriptPiece;
+        }
+      }
+
+      const liveDisplay = (finalSpokenText + ' ' + interimTranscript).trim();
+      if (liveDisplay) {
+        stageStatus.textContent = `"${liveDisplay}"`;
+        stageSub.textContent = 'Listening... (Pause or click stop when finished)';
+        textInput.value = liveDisplay;
+      }
+
+      // Auto-dispatch after 1.8 seconds of silence once substantive words are heard
+      clearTimeout(speechSilenceTimer);
+      if (liveDisplay.length > 5) {
+        speechSilenceTimer = setTimeout(() => {
+          if (isRecording) {
+            const textToSend = (finalSpokenText + ' ' + interimTranscript).trim();
+            if (textToSend) {
+              recognition.stop();
+              stopRecordingUI();
+              handleUserUtterance(textToSend);
+            }
+          }
+        }, 1800);
+      }
     };
 
     recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
-      stopRecordingUI();
+      if (event.error !== 'no-speech') {
+        stopRecordingUI();
+      }
       if (event.error === 'not-allowed') {
         alert('Microphone access was denied. Please allow microphone permissions or use text input.');
       }
     };
 
     recognition.onend = () => {
-      stopRecordingUI();
+      if (isRecording) {
+        // If stopped by user clicking button or silence timeout
+        stopRecordingUI();
+        const textToSend = finalSpokenText.trim() || textInput.value.trim();
+        if (textToSend) {
+          textInput.value = '';
+          handleUserUtterance(textToSend);
+        }
+      }
     };
   }
 
   function stopRecordingUI() {
     isRecording = false;
+    clearTimeout(speechSilenceTimer);
     btnMic.classList.remove('recording');
     micIcon.textContent = '🎙️';
     micText.textContent = 'Speak to Ava';
@@ -158,11 +202,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (isRecording) {
+      clearTimeout(speechSilenceTimer);
+      const textToSend = finalSpokenText.trim() || textInput.value.trim();
       recognition.stop();
       stopRecordingUI();
+      if (textToSend) {
+        textInput.value = '';
+        handleUserUtterance(textToSend);
+      }
     } else {
       window.speechSynthesis.cancel();
+      stopSpeakingAnimation();
       try {
+        finalSpokenText = '';
+        textInput.value = '';
         const langMap = { en: 'en-US', es: 'es-ES', hi: 'hi-IN', fr: 'fr-FR', de: 'de-DE', ja: 'ja-JP' };
         recognition.lang = langMap[currentLanguage] || 'en-US';
         recognition.start();
