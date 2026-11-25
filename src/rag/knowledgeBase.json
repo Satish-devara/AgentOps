@@ -1,0 +1,65 @@
+[
+  {
+    "id": "prod-overview",
+    "category": "product",
+    "title": "ApexAI Sales Engine Overview",
+    "content": "ApexAI Sales Engine is an enterprise-grade autonomous AI voice agent platform designed to engage, qualify, and convert inbound and outbound leads 24/7. It delivers sub-450ms human-grade voice response, integrates with major CRMs, conducts BANT qualification, and books calendar appointments directly into Account Executive schedules.",
+    "keywords": ["apexai", "product", "features", "overview", "what is", "capabilities", "voice agent", "sdr"]
+  },
+  {
+    "id": "pricing-tiers",
+    "category": "pricing",
+    "title": "Pricing & Packaging Tiers",
+    "content": "ApexAI offers three transparent tiers: 1. Starter Tier ($499/month): Up to 500 voice minutes, standard CRM sync, 3 languages, email support. 2. Growth Tier ($1,499/month): Up to 2,500 voice minutes, custom RAG knowledge base, automated BANT qualification, Zapier and HubSpot sync. 3. Enterprise Tier ($4,999/month or custom): Unlimited concurrent calls, 10,000+ minutes, custom voice cloning, dedicated account manager, SOC2 Type II compliance, bidirectional Salesforce and HubSpot sync, and 99.99% uptime SLA.",
+    "keywords": ["price", "cost", "pricing", "tier", "starter", "growth", "enterprise", "plan", "subscription", "expensive", "how much"]
+  },
+  {
+    "id": "tech-specs",
+    "category": "technology",
+    "title": "Voice Latency, STT, TTS and Architecture Specs",
+    "content": "ApexAI achieves ultra-low end-to-end voice latency of under 450 milliseconds. The voice stack uses streaming Speech-to-Text (STT) with Whisper / Nova-2 models, neural Text-to-Speech (TTS) with expressive voice cloning, WebRTC for zero-jitter browser audio, and SIP trunking for direct telephony PBX integration. It supports barge-in interruption detection and dynamic conversational turn-taking.",
+    "keywords": ["latency", "stt", "tts", "voice", "webrtc", "sip", "whisper", "deepgram", "elevenlabs", "turn-taking", "interruption", "barge-in", "real-time"]
+  },
+  {
+    "id": "multilingual",
+    "category": "features",
+    "title": "Multilingual Capabilities",
+    "content": "ApexAI natively supports over 25 languages including English, Spanish, Hindi, French, German, Japanese, and Mandarin. The agent dynamically detects the caller's spoken language mid-conversation and seamlessly transitions speech synthesis and contextual comprehension without restarting the session.",
+    "keywords": ["multilingual", "languages", "spanish", "hindi", "french", "german", "japanese", "translation", "language switch", "idiomas"]
+  },
+  {
+    "id": "crm-integrations",
+    "category": "integration",
+    "title": "CRM and Calendar Integrations",
+    "content": "ApexAI features native bidirectional integrations with Salesforce, HubSpot, Zoho, Pipedrive, and custom webhooks. It automatically creates or updates leads, writes structured BANT qualification notes, logs full call transcripts, records audio links, and schedules Google Meet / Microsoft Outlook calendar invitations in real time.",
+    "keywords": ["crm", "salesforce", "hubspot", "integration", "sync", "calendar", "google meet", "outlook", "appointment", "booking", "webhook"]
+  },
+  {
+    "id": "security-compliance",
+    "category": "security",
+    "title": "Enterprise Security, Compliance & Data Privacy",
+    "content": "ApexAI enforces bank-grade security: SOC2 Type II certified, HIPAA compliant with signed BAAs, and GDPR compliant. All audio streams and transcripts are encrypted with TLS 1.3 in transit and AES-256 at rest. PII (Personally Identifiable Information) is scrubbed at the edge before LLM inference, and customer conversation data is never used to train foundational AI models under our Zero Data Retention policy.",
+    "keywords": ["security", "soc2", "hipaa", "gdpr", "privacy", "encryption", "pii", "compliance", "safe", "data protection"]
+  },
+  {
+    "id": "objection-robotic",
+    "category": "objections",
+    "title": "Objection Handling: AI Sounds Unnatural or Robotic",
+    "content": "ApexAI utilizes neural prosody modeling, emotive breathing pauses, and contextual filler words ('I see', 'Got it', 'Certainly'). In double-blind customer testing across 50,000 calls, 94% of prospects could not distinguish ApexAI from a top-performing human SDR during the initial 3 minutes of conversation.",
+    "keywords": ["robotic", "unnatural", "fake", "sounds like a robot", "human sounding", "voice quality"]
+  },
+  {
+    "id": "objection-replacement",
+    "category": "objections",
+    "title": "Objection Handling: Human SDR Replacement & Team Synergy",
+    "content": "ApexAI does not replace experienced Account Executives or senior closers; it acts as a 24/7 force multiplier for your sales team. Human SDRs typically spend 70% of their day dialing unanswered calls or chasing unresponsive leads. ApexAI handles Tier-1 cold outbound dialing and instant 1-minute inbound speed-to-lead, routing qualified prospects and booked meetings straight to human reps.",
+    "keywords": ["replace my team", "replace humans", "sdr team", "job replacement", "sales reps", "work with team"]
+  },
+  {
+    "id": "roi-metrics",
+    "category": "business",
+    "title": "Business ROI and Cost Comparison",
+    "content": "A human SDR costs an average of $75,000 annually with salary, benefits, and tools, making roughly 60-80 calls per day with a 3% connection rate. ApexAI operates at approximately $0.04 per call minute, delivers 10x higher call volume capacity, responds to inbound inquiries within 15 seconds, and increases qualified pipeline by 320% while reducing customer acquisition costs (CAC) by 65%. Typical payback period is 21 to 28 days.",
+    "keywords": ["roi", "cost comparison", "cac", "savings", "payback", "business value", "conversion rate", "pipeline", "financial"]
+  }
+]
