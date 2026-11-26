@@ -925,6 +925,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Direct Competitor Battlecard Trigger
+  document.getElementById('btnTriggerBattlecardDirect')?.addEventListener('click', () => {
+    textInput.value = '';
+    handleUserUtterance('How does ApexAI compare to Bland AI and traditional SDRs?');
+  });
+
   // 3. Audio Frequency Visualizer Canvas
   const canvas = document.getElementById('audioCanvas');
   if (canvas) {

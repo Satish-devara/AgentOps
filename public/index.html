@@ -162,7 +162,7 @@
               <span class="chip" data-text="How much does it cost? What are your pricing tiers?">💰 Pricing & Tiers</span>
               <span class="chip" data-text="Our budget is $50,000 and we want to book an executive demo for our VP next week.">🔥 $50k Budget + Book Demo</span>
               <span class="chip" data-text="Won't an AI agent sound robotic and turn off high-value clients?">🤖 Objection: Too Robotic?</span>
-              <span class="chip" data-text="How does ApexAI compare to Bland AI and traditional SDRs?">⚡ ApexAI vs Bland AI</span>
+              <span class="chip" data-text="How does ApexAI compare to Bland AI and traditional SDRs?" style="border-color:#f59e0b; color:#fbbf24; font-weight:700; background:rgba(245,158,11,0.15);">⚔️ Test Battlecard: ApexAI vs Bland AI</span>
               <span class="chip" data-text="Is your solution HIPAA and SOC2 compliant for enterprise data?">🔒 Security & HIPAA</span>
               <span class="chip" data-text="Hola, ¿hablas español? Me gustaría conocer los precios.">🇪🇸 Spanish Inquiry</span>
               <span class="chip" data-text="Bonjour, pouvez-vous me donner les tarifs et fonctionnalités d'ApexAI?">🇫🇷 French Inquiry</span>
@@ -176,21 +176,26 @@
         <!-- Right Column: Real-Time Intelligence & CRM Telemetry -->
         <div class="telemetry-column">
           
-          <!-- Competitor Battlecard Alert Card (Dynamic) -->
-          <div class="card competitor-card" id="competitorAlertCard" style="display:none;">
+          <!-- Competitor Battlecard Radar (Visible by default) -->
+          <div class="card competitor-card" id="competitorAlertCard">
             <div class="card-header" style="background:rgba(245, 158, 11, 0.15); border-bottom-color:rgba(245, 158, 11, 0.3);">
-              <div class="card-title" style="color:#fbbf24;">⚔️ Competitor Battlecard Alert</div>
-              <span class="msg-tag" id="competitorNameTag" style="background:#f59e0b; color:#000; font-weight:700;">COMPETITOR</span>
+              <div class="card-title" style="color:#fbbf24;">⚔️ Competitor Battlecard Radar</div>
+              <span class="msg-tag" id="competitorNameTag" style="background:#f59e0b; color:#000; font-weight:700;">BLAND AI / RETELL</span>
             </div>
             <div class="card-body">
-              <div style="font-size:0.75rem; color:#fde68a; margin-bottom:0.4rem; font-weight:700;" id="compAdvantageTitle">
+              <div style="font-size:0.75rem; color:#fde68a; margin-bottom:0.35rem; font-weight:700;" id="compAdvantageTitle">
                 Key Win Strategy & Differentiator
               </div>
               <div style="font-size:0.75rem; color:#e2e8f0; line-height:1.45;" id="compAdvantageText">
-                ApexAI provides turnkey CRM BANT sync, sub-450ms latency, and HIPAA/SOC2 compliance out-of-the-box without requiring custom developer glue code.
+                ApexAI delivers an enterprise-ready Autonomous Revenue Engine with native bidirectional CRM BANT sync, sub-450ms voice latency, and SOC2/HIPAA compliance out-of-the-box (no custom developer glue code needed).
               </div>
-              <div style="margin-top:0.4rem; font-size:0.72rem; color:#34d399; font-weight:700;" id="compWinRate">
-                🏆 87% Enterprise Win-Rate in Head-to-Head Evaluations
+              <div style="margin-top:0.5rem; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.72rem; color:#34d399; font-weight:700;" id="compWinRate">
+                  🏆 87% Enterprise Win-Rate
+                </span>
+                <button id="btnTriggerBattlecardDirect" class="hud-btn" style="background:rgba(245,158,11,0.2); border-color:#f59e0b; color:#fbbf24; font-size:0.7rem;">
+                  ⚡ Ask Ava vs Bland AI
+                </button>
               </div>
             </div>
           </div>
