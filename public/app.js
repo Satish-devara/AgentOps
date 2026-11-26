@@ -83,6 +83,14 @@ document.addEventListener('DOMContentLoaded', () => {
     addSystemNote(`Language switched to ${langSelect.options[langSelect.selectedIndex].text}`);
   });
 
+  // Voice Model Change & Instant Preview
+  const voiceModelSelect = document.getElementById('voiceModelSelect');
+  voiceModelSelect?.addEventListener('change', (e) => {
+    const selectedVoiceName = voiceModelSelect.options[voiceModelSelect.selectedIndex].text;
+    addSystemNote(`Voice synthesizer updated to ${selectedVoiceName}`);
+    speakResponse(`Voice updated. Hello! I'm Ava, your autonomous sales voice executive.`, 'en');
+  });
+
   // Audio Toggle
   btnAudioToggle.addEventListener('click', () => {
     isAudioEnabled = !isAudioEnabled;
@@ -321,21 +329,75 @@ document.addEventListener('DOMContentLoaded', () => {
     utterance.rate = 1.05;
     utterance.pitch = 1.0;
 
-    // Pick a native high-quality voice for this specific language
+    // High-Quality Voice Selection Engine (Filters out robotic/novelty voices like Albert)
     const voices = window.speechSynthesis.getVoices();
     const langPrefix = (utterance.lang || 'en').split('-')[0].toLowerCase();
     
-    // First priority: A native voice whose lang starts with the exact code (e.g. 'fr-FR', 'de-DE', 'ja-JP', 'es-ES')
-    let targetVoice = voices.find(v => v.lang.replace('_', '-').toLowerCase().startsWith(utterance.lang.toLowerCase()));
-    
-    // Second priority: Any voice matching the 2-letter language prefix
-    if (!targetVoice) {
-      targetVoice = voices.find(v => v.lang.replace('_', '-').toLowerCase().startsWith(langPrefix));
+    // Legacy novelty voices on Mac that sound robotic or like someone with a choked throat
+    const noveltyVoices = new Set([
+      'albert', 'bad news', 'bahh', 'bells', 'boing', 'bubbles', 'cellos',
+      'wobble', 'fred', 'good news', 'jester', 'junior', 'organ', 'superstar',
+      'ralph', 'trinoids', 'whisper', 'zarvox'
+    ]);
+
+    let targetVoice = null;
+    const userVoiceChoice = document.getElementById('voiceModelSelect')?.value || 'auto';
+
+    if (langPrefix === 'en') {
+      // If user selected a specific voice
+      if (userVoiceChoice === 'samantha') {
+        targetVoice = voices.find(v => v.name.includes('Samantha') && !v.name.includes('Compact')) || voices.find(v => v.name.includes('Samantha'));
+      } else if (userVoiceChoice === 'karen') {
+        targetVoice = voices.find(v => v.name.includes('Karen'));
+      } else if (userVoiceChoice === 'daniel') {
+        targetVoice = voices.find(v => v.name.includes('Daniel'));
+      } else if (userVoiceChoice === 'moira') {
+        targetVoice = voices.find(v => v.name.includes('Moira'));
+      }
+
+      // If auto or not found yet, pick the highest quality natural voice
+      if (!targetVoice) {
+        const preferredEnglishVoices = [
+          v => v.name.includes('Samantha') && !v.name.includes('Compact'),
+          v => v.name.includes('Google US English'),
+          v => v.name.includes('Karen'),
+          v => v.name.includes('Daniel'),
+          v => v.name.includes('Moira'),
+          v => v.name.includes('Samantha'),
+          v => (v.name.includes('Natural') || v.name.includes('Enhanced') || v.name.includes('Neural')) && v.lang.startsWith('en'),
+          v => v.name.includes('Victoria'),
+          v => v.name.includes('Tessa'),
+          v => v.lang.startsWith('en') && !noveltyVoices.has(v.name.toLowerCase())
+        ];
+
+        for (const matcher of preferredEnglishVoices) {
+          targetVoice = voices.find(matcher);
+          if (targetVoice) break;
+        }
+      }
+    } else {
+      // Non-English: match native voices, avoiding novelty voices
+      targetVoice = voices.find(v => 
+        v.lang.replace('_', '-').toLowerCase().startsWith(utterance.lang.toLowerCase()) && 
+        !noveltyVoices.has(v.name.toLowerCase())
+      );
+      if (!targetVoice) {
+        targetVoice = voices.find(v => 
+          v.lang.replace('_', '-').toLowerCase().startsWith(langPrefix) && 
+          !noveltyVoices.has(v.name.toLowerCase())
+        );
+      }
     }
-    
+
     if (targetVoice) {
       utterance.voice = targetVoice;
+      stageSub.textContent = `Speaking with ${targetVoice.name} (${utterance.lang})`;
+    } else {
+      stageSub.textContent = `Streaming synthetic neural voice (${utterance.lang})`;
     }
+
+    utterance.rate = 1.0; // Natural, clear pacing
+    utterance.pitch = 1.0; // Natural human pitch
 
     utterance.onstart = () => {
       stageStatus.textContent = 'Ava is speaking...';
